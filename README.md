@@ -1,3 +1,3 @@
 # Knight
 Chess Social Network,
-[Frontend](https://github.com/u032/knight-ui)
+[ui](https://github.com/u032/knight-ui)
