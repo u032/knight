@@ -8,19 +8,20 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import wiki.chess.config
 
 fun Application.configureSecurity() {
     install(Authentication) {
         oauth("discord") {
-            urlProvider = { "http://localhost:8080/callback" }
+            urlProvider = { "http://localhost:8080/auth/callback" }
             providerLookup = {
                 OAuthServerSettings.OAuth2ServerSettings(
                     name = "discord",
                     authorizeUrl = "https://discord.com/api/oauth2/authorize",
                     accessTokenUrl = "https://discord.com/api/oauth2/token",
                     requestMethod = HttpMethod.Post,
-                clientId = "920294906008834058",
-                    clientSecret = "DYLKhw3-Uun-I6Op8E1sPCbIE9LGh_sp",
+                    clientId = config.id,
+                    clientSecret = config.secret,
                     defaultScopes = listOf("identify")
                 )
             }
@@ -29,17 +30,15 @@ fun Application.configureSecurity() {
     }
 
     routing {
-        authenticate("discord") {
-            get("login") {
-                call.respondRedirect(
-                    "https://discord.com/api/oauth2/authorize?response_type=code&client_id=920294906008834058&scope=identify&redirect_uri=http://localhost:8080/callback&prompt=none"
-                )
-            }
-
-            get("/callback") {
-                val principal: OAuthAccessTokenResponse.OAuth2? = call.authentication.principal()
-                call.sessions.set(UserSession(principal?.accessToken.toString()))
-                call.respondRedirect("/hello")
+        route("/auth") {
+            authenticate("discord") {
+                get("/") {
+                    call.respondRedirect(config.authUrl)
+                }
+                get("/callback") {
+                    val principal: OAuthAccessTokenResponse.OAuth2? = call.authentication.principal()
+                    call.respondRedirect("http://localhost/test/success.html?token=${principal?.accessToken.toString()}")
+                }
             }
         }
     }
