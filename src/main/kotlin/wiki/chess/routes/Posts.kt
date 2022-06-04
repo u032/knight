@@ -97,7 +97,7 @@ fun Route.posts() {
                     call.respond(HttpStatusCode.NotFound, "Post not found")
                     return@delete
                 }
-                if (!discordUser.id.equals(post.author) || user.role.equals("MOD")) {
+                if (!discordUser.id.equals(post.author) && !user.role.equals("MOD")) {
                     call.respond(HttpStatusCode.Unauthorized, "401")
                     return@delete
                 }
