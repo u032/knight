@@ -9,7 +9,7 @@ data class User(
     var email: String = "",
     val federation: String = "",
     val rating: Long = 0,
-    var role: String = "",
+    val role: String = "",
     val sex: String = "",
     val title: String = ""
 )
