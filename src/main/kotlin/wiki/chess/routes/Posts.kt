@@ -68,6 +68,11 @@ fun Route.posts() {
                 val token = call.request.headers[HttpHeaders.Authorization]
                 val postId = call.parameters["id"]
 
+                if(postId == null) {
+                    call.respond(HttpStatusCode.NotFound, "Post not found")
+                    return@delete
+                }
+
                 if (token == null) {
                     call.respond(HttpStatusCode.Unauthorized, "401")
                     return@delete
@@ -105,7 +110,60 @@ fun Route.posts() {
                 call.respond(200)
             }
 
-            get("/get/{id}") {
+
+        post("/update/{id}") {
+            val token = call.request.headers[HttpHeaders.Authorization]
+            val postId = call.parameters["id"]
+            val content = call.receiveText()
+
+            if (content.length < 3) {
+                call.respond(HttpStatusCode.NoContent, "204")
+                return@post
+            }
+
+            val discordUser: DiscordUser = httpClient.get("https://discord.com/api/users/@me") {
+                headers {
+                    append(HttpHeaders.Authorization, "Bearer $token")
+                }
+            }.body()
+
+            val user = withContext(Dispatchers.IO) {
+                fsclient.collection("users").document(discordUser.id).get().get()
+            }.toObject(User::class.java)
+
+
+            if (user == null) {
+                call.respond(HttpStatusCode.NotFound, "User not found")
+                return@post
+            }
+
+
+            if(postId == null) {
+                call.respond(HttpStatusCode.NotFound, "Post not found")
+                return@post
+            }
+
+            val post = withContext(Dispatchers.IO) {
+                fsclient.collection("posts").document(postId).get().get()
+            }.toObject(Post::class.java)
+
+
+            if (post == null) {
+                call.respond(HttpStatusCode.NotFound, "Post not found")
+                return@post
+            }
+
+            if (!discordUser.id.equals(post.author) && !user.role.equals("ADMIN")) {
+                call.respond(HttpStatusCode.Unauthorized, "401")
+                return@post
+            }
+
+            fsclient.collection("posts").document(postId.toString()).update("content", content)
+            call.respond(200)
+
+        }
+
+        get("/get/{id}") {
                 val postId = call.parameters["id"]
                 if(postId == null) {
                     call.respond(HttpStatusCode.NotFound, "Post not found")
