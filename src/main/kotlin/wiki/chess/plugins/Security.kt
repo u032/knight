@@ -75,7 +75,7 @@ fun Application.configureSecurity() {
                             "name" to discordUser.username,
                             "bio" to "Look at me, I'm new!",
                             "chessLink" to "",
-                            "country" to Country.UA.name,
+                            "country" to Country.UN.name,
                             "email" to "",
                             "federation" to "",
                             "rating" to 0,
