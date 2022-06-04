@@ -14,6 +14,7 @@ import wiki.chess.httpClient
 import wiki.chess.models.DiscordUser
 import wiki.chess.models.Post
 import wiki.chess.models.User
+import wiki.chess.getDiscordUser
 
 fun Route.posts() {
     val fsclient = FirestoreClient.getFirestore()
@@ -29,11 +30,7 @@ fun Route.posts() {
             }
 
 
-            val discordUser: DiscordUser = httpClient.get("https://discord.com/api/users/@me") {
-                headers {
-                    append(HttpHeaders.Authorization, "Bearer $token")
-                }
-            }.body()
+            val discordUser = getDiscordUser(call);
 
             val user = withContext(Dispatchers.IO) {
                 fsclient.collection("users").document(discordUser.id).get().get()
@@ -73,11 +70,7 @@ fun Route.posts() {
                     return@delete
                 }
 
-                val discordUser: DiscordUser = httpClient.get("https://discord.com/api/users/@me") {
-                    headers {
-                        append(HttpHeaders.Authorization, "Bearer $token")
-                    }
-                }.body()
+                val discordUser = getDiscordUser(call);
 
                 val user = withContext(Dispatchers.IO) {
                     fsclient.collection("users").document(discordUser.id).get().get()
