@@ -16,7 +16,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlin.test.*
 import io.ktor.server.testing.*
-import wiki.chess.plugins.*
+import wiki.chess.  plugins.*
 
 class ApplicationTest {
     @Test
