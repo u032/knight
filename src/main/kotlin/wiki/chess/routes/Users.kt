@@ -75,7 +75,7 @@ fun Route.users() {
                 "name" to user.name,
                 "bio" to user.bio,
                 "chessLink" to user.chessLink,
-                "country" to user.country.ifEmpty { Country.INTERNATIONAL.name },
+                "country" to user.country.ifEmpty { Country.UN.name },
                 "email" to user.email,
                 "federation" to user.federation,
                 "sex" to user.sex,
