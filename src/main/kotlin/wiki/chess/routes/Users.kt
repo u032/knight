@@ -1,16 +1,17 @@
 package wiki.chess.routes
 
-import com.google.firebase.cloud.FirestoreClient
-import io.ktor.client.call.*
-import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import wiki.chess.httpClient
-import wiki.chess.models.DiscordUser
+import wiki.chess.db
+import wiki.chess.enums.Country
+import wiki.chess.enums.Federation
+import wiki.chess.enums.Sex
+import wiki.chess.getDiscordUser
 import wiki.chess.models.User
 
 fun Route.users() {
@@ -23,7 +24,7 @@ fun Route.users() {
             }
 
             val user = withContext(Dispatchers.IO) {
-                FirestoreClient.getFirestore().collection("users").document(id)
+                db.collection("users").document(id)
                     .get().get()
             }.toObject(User::class.java)
 
@@ -37,20 +38,10 @@ fun Route.users() {
             call.respond(user)
         }
         get("/get/@me") {
-            val token = call.request.headers[HttpHeaders.Authorization]
-            if (token == null) {
-                call.respond(HttpStatusCode.Unauthorized, "401")
-                return@get
-            }
-
-            val discordUser: DiscordUser = httpClient.get("https://discord.com/api/users/@me") {
-                headers {
-                    append(HttpHeaders.Authorization, "Bearer $token")
-                }
-            }.body()
+            val discordUser = getDiscordUser(call) ?: return@get
 
             val user = withContext(Dispatchers.IO) {
-                FirestoreClient.getFirestore().collection("users").document(discordUser.id).get().get()
+                db.collection("users").document(discordUser.id).get().get()
             }.toObject(User::class.java)
 
             if (user == null) {
@@ -59,6 +50,52 @@ fun Route.users() {
             }
 
             call.respond(user)
+        }
+        put("/update/@me") {
+            val discordUser = getDiscordUser(call) ?: return@put
+
+            val user: User = call.receive()
+
+            if (user.name.length < 2) {
+                call.respond(HttpStatusCode.BadRequest, "Name length must be more than 2 characters")
+                return@put
+            }
+
+            if (user.federation != Federation.FIDE.name && user.federation != Federation.NATIONAL.name) {
+                call.respond(HttpStatusCode.BadRequest, "Federation must be FIDE or NATIONAL")
+                return@put
+            }
+
+            if (user.sex != Sex.MALE.name && user.sex != Sex.FEMALE.name) {
+                call.respond(HttpStatusCode.BadRequest, "Sex must be MALE or FEMALE")
+                return@put
+            }
+
+            val data: Map<String, Any> = mapOf(
+                "name" to user.name,
+                "bio" to user.bio,
+                "chessLink" to user.chessLink,
+                "country" to user.country.ifEmpty { Country.INTERNATIONAL.name },
+                "email" to user.email,
+                "federation" to user.federation,
+                "sex" to user.sex,
+                "title" to user.title
+            )
+
+            withContext(Dispatchers.IO) {
+                db.collection("users").document(discordUser.id).update(data).get()
+            }
+
+            call.respond(HttpStatusCode.OK, "Account updated")
+        }
+        delete("/delete/@me") {
+            val discordUser = getDiscordUser(call) ?: return@delete
+
+            withContext(Dispatchers.IO) {
+                db.collection("users").document(discordUser.id).delete().get()
+            }
+
+            call.respond(HttpStatusCode.OK, "Account deleted")
         }
     }
 }
