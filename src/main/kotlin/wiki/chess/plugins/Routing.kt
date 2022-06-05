@@ -6,6 +6,7 @@ import wiki.chess.routes.mod
 import wiki.chess.routes.posts
 import wiki.chess.routes.users
 
+
 fun Application.configureRouting() {
     routing {
         users()

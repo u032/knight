@@ -11,6 +11,7 @@ import wiki.chess.getDiscordUser
 import wiki.chess.models.User
 import wiki.chess.enums.Title
 
+
 fun Route.mod() {
     route("/moderation") {
         post("/setTitle/{user}/{title}") {

@@ -10,6 +10,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import wiki.chess.getDiscordUser
 import wiki.chess.httpClient
 import wiki.chess.models.DiscordUser
 import wiki.chess.models.Post
@@ -28,12 +29,7 @@ fun Route.posts() {
                 return@post
             }
 
-
-            val discordUser: DiscordUser = httpClient.get("https://discord.com/api/users/@me") {
-                headers {
-                    append(HttpHeaders.Authorization, "Bearer $token")
-                }
-            }.body()
+            val discordUser = getDiscordUser(call) ?: return@post
 
             val user = withContext(Dispatchers.IO) {
                 fsclient.collection("users").document(discordUser.id).get().get()
@@ -78,11 +74,7 @@ fun Route.posts() {
                     return@delete
                 }
 
-                val discordUser: DiscordUser = httpClient.get("https://discord.com/api/users/@me") {
-                    headers {
-                        append(HttpHeaders.Authorization, "Bearer $token")
-                    }
-                }.body()
+                val discordUser = getDiscordUser(call) ?: return@delete
 
                 val user = withContext(Dispatchers.IO) {
                     fsclient.collection("users").document(discordUser.id).get().get()
@@ -121,12 +113,7 @@ fun Route.posts() {
                 return@post
             }
 
-            val discordUser: DiscordUser = httpClient.get("https://discord.com/api/users/@me") {
-                headers {
-                    append(HttpHeaders.Authorization, "Bearer $token")
-                }
-            }.body()
-
+            val discordUser = getDiscordUser(call) ?: return@post
             val user = withContext(Dispatchers.IO) {
                 fsclient.collection("users").document(discordUser.id).get().get()
             }.toObject(User::class.java)
