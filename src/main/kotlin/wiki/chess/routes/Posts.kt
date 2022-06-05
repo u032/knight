@@ -10,6 +10,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import wiki.chess.db
 import wiki.chess.getDiscordUser
 import wiki.chess.httpClient
 import wiki.chess.models.DiscordUser
@@ -20,6 +21,20 @@ fun Route.posts() {
     val fsclient = FirestoreClient.getFirestore()
 
     route("/posts") {
+        get("/get") {
+                val postsDocuments = withContext(Dispatchers.IO) {
+                    db.collection("posts").get().get().documents
+                }
+
+            val posts: ArrayList<Post> = ArrayList()
+
+            postsDocuments.forEach {post ->
+                posts.add(post.toObject(Post::class.java))
+            }
+
+            call.respond(posts)
+        }
+
         post("/create") {
             val token = call.request.headers[HttpHeaders.Authorization]
             val collection = fsclient.collection("posts")
@@ -51,7 +66,7 @@ fun Route.posts() {
             val data: Map<String, Any> = mapOf(
                 "id" to id,
                 "content" to content,
-                "author" to discordUser.id,
+                "author" to discordUser.id.toLong(),
                 "date" to timestamp
             )
             withContext(Dispatchers.IO) {
@@ -104,7 +119,6 @@ fun Route.posts() {
 
 
         post("/update/{id}") {
-            val token = call.request.headers[HttpHeaders.Authorization]
             val postId = call.parameters["id"]
             val content = call.receiveText()
 
