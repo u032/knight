@@ -1,6 +1,5 @@
 package wiki.chess.enums
 
-
 enum class Title {
     GM,
     IM,

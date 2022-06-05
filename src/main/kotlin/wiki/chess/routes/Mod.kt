@@ -7,56 +7,45 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import wiki.chess.db
-import wiki.chess.getDiscordUser
-import wiki.chess.models.User
+import wiki.chess.enums.Role
 import wiki.chess.enums.Title
-
+import wiki.chess.getUser
+import wiki.chess.models.User
 
 fun Route.mod() {
     route("/moderation") {
-        post("/setTitle/{user}/{title}") {
-            val token = call.request.headers[HttpHeaders.Authorization]
+        put("/updateTitle/{user}/{title}") {
             val userId = call.parameters["user"]
             val title = call.parameters["title"]
 
-            if (token == null) {
-                call.respond(HttpStatusCode.Unauthorized, "401")
-                return@post
+            if (userId == null || title == null) {
+                call.respond(HttpStatusCode.BadRequest, "Parameter userId and title is required")
+                return@put
             }
 
-            val discordUser = getDiscordUser(call) ?: return@post
+            val modUser = getUser(call) ?: return@put
 
-            val ModUser = withContext(Dispatchers.IO) {
-                db.collection("users").document(discordUser.id).get().get()
-            }.toObject(User::class.java)
-
-
-            if (ModUser == null) {
-                call.respond(HttpStatusCode.NotFound, "User not found")
-                return@post
+            if (modUser.role == Role.USER.name) {
+                call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
+                return@put
             }
 
-            if(ModUser.role == "USER") {
-                call.respond(HttpStatusCode.Unauthorized, "401")
-                return@post
-            }
-
-            if(Title.valueOf(title.toString()).toString().isEmpty()) {
-                call.respond(HttpStatusCode.NoContent, "204")
-                return@post
+            if (Title.valueOf(title).name.isEmpty()) {
+                call.respond(HttpStatusCode.NoContent, "No content")
+                return@put
             }
 
             val user = withContext(Dispatchers.IO) {
-                db.collection("users").document(userId.toString()).get().get()
+                db.collection("users").document(userId).get().get()
             }.toObject(User::class.java)
 
-            if(user == null) {
+            if (user == null) {
                 call.respond(HttpStatusCode.NotFound, "User not found")
-                return@post
+                return@put
             }
 
             db.collection("users").document(userId.toString()).update("title", title)
-            call.respond(200)
+            call.respond(HttpStatusCode.OK, "Title updated")
         }
     }
 }
