@@ -2,6 +2,7 @@ package wiki.chess.models
 
 @kotlinx.serialization.Serializable
 data class User(
+    val id: Long = 0,
     val name: String = "",
     val bio: String = "",
     val chessLink: String = "",

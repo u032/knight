@@ -12,42 +12,39 @@ import wiki.chess.enums.Country
 import wiki.chess.enums.Federation
 import wiki.chess.enums.Sex
 import wiki.chess.getDiscordUser
+import wiki.chess.getUser
 import wiki.chess.models.User
 
 fun Route.users() {
     route("/users") {
+        get("/get/") {
+            val usersDocuments = withContext(Dispatchers.IO) {
+                db.collection("users").get().get().documents
+            }
+
+            val users: ArrayList<User> = ArrayList()
+
+            usersDocuments.forEach { user ->
+                users.add(user.toObject(User::class.java).apply { email = "" })
+            }
+
+            call.respond(users)
+        }
         get("/get/{id}") {
             val id = call.parameters["id"]
             if (id == null) {
-                call.respond(HttpStatusCode.BadRequest, "400 Bad Request")
+                call.respond(HttpStatusCode.BadRequest, "Parameter id is required")
                 return@get
             }
 
-            val user = withContext(Dispatchers.IO) {
-                db.collection("users").document(id)
-                    .get().get()
-            }.toObject(User::class.java)
-
-            if (user == null) {
-                call.respond(HttpStatusCode.NotFound, "User not found")
-                return@get
-            }
+            val user = getUser(call, id) ?: return@get
 
             user.email = ""
 
             call.respond(user)
         }
         get("/get/@me") {
-            val discordUser = getDiscordUser(call) ?: return@get
-
-            val user = withContext(Dispatchers.IO) {
-                db.collection("users").document(discordUser.id).get().get()
-            }.toObject(User::class.java)
-
-            if (user == null) {
-                call.respond(HttpStatusCode.NotFound, "User not found")
-                return@get
-            }
+            val user = getUser(call) ?: return@get
 
             call.respond(user)
         }
@@ -78,22 +75,17 @@ fun Route.users() {
                 "country" to user.country.ifEmpty { Country.UN.name },
                 "email" to user.email,
                 "federation" to user.federation,
-                "sex" to user.sex,
-                "title" to user.title
+                "sex" to user.sex
             )
 
-            withContext(Dispatchers.IO) {
-                db.collection("users").document(discordUser.id).update(data).get()
-            }
+            db.collection("users").document(discordUser.id).update(data)
 
             call.respond(HttpStatusCode.OK, "Account updated")
         }
         delete("/delete/@me") {
             val discordUser = getDiscordUser(call) ?: return@delete
 
-            withContext(Dispatchers.IO) {
-                db.collection("users").document(discordUser.id).delete().get()
-            }
+            db.collection("users").document(discordUser.id).delete()
 
             call.respond(HttpStatusCode.OK, "Account deleted")
         }
