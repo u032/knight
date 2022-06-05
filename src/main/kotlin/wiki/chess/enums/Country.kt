@@ -1,5 +1,4 @@
 package wiki.chess.enums
-
 enum class Country {
     UN,
     UA,
