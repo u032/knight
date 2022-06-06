@@ -72,6 +72,7 @@ fun Application.configureSecurity() {
 
                     if (!user.exists()) {
                         val data: Map<String, Any> = mapOf(
+                            "id" to discordUser.id.toLong(),
                             "name" to discordUser.username,
                             "bio" to "Look at me, I'm new!",
                             "chessLink" to "",

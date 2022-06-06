@@ -24,12 +24,6 @@ suspend fun getDiscordUser(call: ApplicationCall): DiscordUser? {
     }.body()
 }
 
-suspend fun getUser(call: ApplicationCall): User? {
-    val discordUser = getDiscordUser(call) ?: return null
-
-    return getUser(call, discordUser.id)
-}
-
 suspend fun getUser(call: ApplicationCall, id: String): User? {
     val user = withContext(Dispatchers.IO) {
         db.collection("users").document(id).get().get()
@@ -41,4 +35,10 @@ suspend fun getUser(call: ApplicationCall, id: String): User? {
     }
 
     return user
+}
+
+suspend fun getUser(call: ApplicationCall): User? {
+    val discordUser = getDiscordUser(call) ?: return null
+
+    return getUser(call, discordUser.id)
 }

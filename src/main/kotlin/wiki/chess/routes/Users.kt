@@ -17,7 +17,7 @@ import wiki.chess.models.User
 
 fun Route.users() {
     route("/users") {
-        get("/get/") {
+        get("/get") {
             val usersDocuments = withContext(Dispatchers.IO) {
                 db.collection("users").get().get().documents
             }
@@ -58,6 +58,11 @@ fun Route.users() {
                 return@put
             }
 
+            if(user.rating < 100 || user.rating > 3750) {
+                call.respond(HttpStatusCode.BadRequest, "Rating cannot be less than 100 and higher than 3750")
+                return@put
+            }
+
             if (user.federation != Federation.FIDE.name && user.federation != Federation.NATIONAL.name) {
                 call.respond(HttpStatusCode.BadRequest, "Federation must be FIDE or NATIONAL")
                 return@put
@@ -72,6 +77,7 @@ fun Route.users() {
                 "name" to user.name,
                 "bio" to user.bio,
                 "chessLink" to user.chessLink,
+                "rating" to user.rating,
                 "country" to user.country.ifEmpty { Country.UN.name },
                 "email" to user.email,
                 "federation" to user.federation,
