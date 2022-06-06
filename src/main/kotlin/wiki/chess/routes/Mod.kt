@@ -9,11 +9,12 @@ import kotlinx.coroutines.withContext
 import wiki.chess.db
 import wiki.chess.enums.Role
 import wiki.chess.enums.Title
+import wiki.chess.getDiscordUser
 import wiki.chess.getUser
 import wiki.chess.models.User
 
 fun Route.mod() {
-    route("/moderation") {
+    route("/mod") {
         put("/updateTitle/{user}/{title}") {
             val userId = call.parameters["user"]
             val title = call.parameters["title"]
@@ -46,6 +47,35 @@ fun Route.mod() {
 
             db.collection("users").document(userId.toString()).update("title", title)
             call.respond(HttpStatusCode.OK, "Title updated")
+        }
+
+        delete("/closeAccount/{user}") {
+            val userId = call.parameters["user"]
+            if (userId == null) {
+                call.respond(HttpStatusCode.BadRequest, "Parameter userId is required")
+                return@delete
+            }
+            val user = getUser(call, userId)
+            if (user == null) {
+                call.respond(HttpStatusCode.NotFound, "User not found")
+                return@delete
+            }
+
+            val modDiscord = getDiscordUser(call)
+            val modUser = getUser(call)
+
+            if (modUser == null || modDiscord == null || modUser.role == Role.USER.name) {
+                call.respond(HttpStatusCode.Unauthorized, "401")
+                return@delete
+            }
+
+            if (modUser.id == user.id) {
+                call.respond(HttpStatusCode.BadRequest, "You can't delete yourself")
+                return@delete
+            }
+
+            db.collection("users").document(userId).delete()
+            call.respond(200)
         }
     }
 }
