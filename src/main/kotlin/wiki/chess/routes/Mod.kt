@@ -45,6 +45,11 @@ fun Route.mod() {
                 return@put
             }
 
+            if (title == "RM") {
+                db.collection("users").document(userId.toString()).update("title", "")
+                call.respond(HttpStatusCode.OK, "Title updated")
+                return@put
+            }
             db.collection("users").document(userId.toString()).update("title", title)
             call.respond(HttpStatusCode.OK, "Title updated")
         }
