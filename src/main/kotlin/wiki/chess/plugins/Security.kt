@@ -1,9 +1,7 @@
 package wiki.chess.plugins
 
 import com.google.firebase.cloud.FirestoreClient
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.apache.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -33,7 +31,7 @@ fun Application.configureSecurity() {
                     defaultScopes = listOf("identify")
                 )
             }
-            client = HttpClient(Apache)
+            client = httpClient
         }
     }
 
