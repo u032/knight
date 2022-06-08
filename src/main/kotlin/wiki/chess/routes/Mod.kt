@@ -11,17 +11,12 @@ import wiki.chess.enums.Role
 import wiki.chess.enums.Title
 import wiki.chess.getUser
 import wiki.chess.models.User
+import wiki.chess.validateIsNull
 
 fun Route.mod() {
     put("/updateTitle/{user}/{title}") {
-        val userId = call.parameters["user"]
-        val title = call.parameters["title"]
-
-        if (userId == null || title == null) {
-            call.respond(HttpStatusCode.BadRequest, "Parameter userId and title is required")
-            return@put
-        }
-
+        val userId = call.parameters["user"].validateIsNull(call) ?: return@put
+        val title = call.parameters["title"].validateIsNull(call) ?: return@put
         val modUser = getUser(call) ?: return@put
 
         if (modUser.role == Role.USER.name) {
@@ -44,24 +39,16 @@ fun Route.mod() {
         }
 
         if (title == "RM") {
-            db.collection("users").document(userId.toString()).update("title", "")
+            db.collection("users").document(userId).update("title", "")
             call.respond(HttpStatusCode.OK, "Title updated")
             return@put
         }
-        db.collection("users").document(userId.toString()).update("title", title)
+        db.collection("users").document(userId).update("title", title)
         call.respond(HttpStatusCode.OK, "Title updated")
     }
     delete("/delete/{user}") {
-        val userId = call.parameters["user"]
-        if (userId == null) {
-            call.respond(HttpStatusCode.BadRequest, "Parameter userId is required")
-            return@delete
-        }
-        val user = getUser(call, userId)
-        if (user == null) {
-            call.respond(HttpStatusCode.NotFound, "User not found")
-            return@delete
-        }
+        val userId = call.parameters["user"].validateIsNull(call) ?: return@delete
+        val user = getUser(call, userId) ?: return@delete
 
         val modUser = getUser(call)
 

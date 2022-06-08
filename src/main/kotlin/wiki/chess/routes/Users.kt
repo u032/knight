@@ -7,12 +7,10 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import wiki.chess.db
+import wiki.chess.*
 import wiki.chess.enums.Country
 import wiki.chess.enums.Federation
 import wiki.chess.enums.Sex
-import wiki.chess.getDiscordUser
-import wiki.chess.getUser
 import wiki.chess.models.User
 
 fun Route.users() {
@@ -30,12 +28,7 @@ fun Route.users() {
         call.respond(users)
     }
     get("/get/{id}") {
-        val id = call.parameters["id"]
-        if (id == null) {
-            call.respond(HttpStatusCode.BadRequest, "Parameter id is required")
-            return@get
-        }
-
+        val id = call.parameters["id"].validateIsNull(call) ?: return@get
         val user = getUser(call, id) ?: return@get
 
         user.email = ""
@@ -52,10 +45,7 @@ fun Route.users() {
 
         val user: User = call.receive()
 
-        if (user.name.length < 2) {
-            call.respond(HttpStatusCode.BadRequest, "Name length must be more than 2 characters")
-            return@put
-        }
+        user.name.validateHasLength(call, 2, 32) ?: return@put
 
         if (user.federation != Federation.FIDE.name && user.federation != Federation.NATIONAL.name) {
             call.respond(HttpStatusCode.BadRequest, "Federation must be FIDE or NATIONAL")

@@ -11,6 +11,8 @@ import wiki.chess.db
 import wiki.chess.enums.Role
 import wiki.chess.getUser
 import wiki.chess.models.Post
+import wiki.chess.validateHasLength
+import wiki.chess.validateIsNull
 
 fun Route.posts() {
     get("/get") {
@@ -27,12 +29,7 @@ fun Route.posts() {
         call.respond(posts)
     }
     get("/get/{id}") {
-        val postId = call.parameters["id"]
-
-        if (postId == null) {
-            call.respond(HttpStatusCode.BadRequest, "Parameter id is required")
-            return@get
-        }
+        val postId = call.parameters["id"].validateIsNull(call) ?: return@get
 
         val post = withContext(Dispatchers.IO) {
             db.collection("posts").document(postId).get().get()
@@ -53,10 +50,7 @@ fun Route.posts() {
 
         val content = call.receiveText()
 
-        if (content.length < 3) {
-            call.respond(HttpStatusCode.NoContent, "No content")
-            return@put
-        }
+        content.validateHasLength(call, min = 8) ?: return@put
 
         val id = withContext(Dispatchers.IO) { collection.get().get() }.documents.size + 1
         val data: Map<String, Any> = mapOf(
@@ -73,12 +67,7 @@ fun Route.posts() {
         call.respond(HttpStatusCode.OK, "Post created")
     }
     delete("/delete/{id}") {
-        val postId = call.parameters["id"]
-
-        if (postId == null) {
-            call.respond(HttpStatusCode.BadRequest, "Parameter id is required")
-            return@delete
-        }
+        val postId = call.parameters["id"].validateIsNull(call) ?: return@delete
 
         val user = getUser(call) ?: return@delete
 
@@ -96,7 +85,7 @@ fun Route.posts() {
             return@delete
         }
 
-        db.collection("posts").document(postId.toString()).delete()
+        db.collection("posts").document(postId).delete()
 
         call.respond(HttpStatusCode.OK, "Post deleted")
     }
