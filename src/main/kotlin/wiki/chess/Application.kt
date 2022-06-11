@@ -33,7 +33,7 @@ fun main() {
     FirebaseApp.initializeApp(options)
     firestoreInstance = FirestoreClient.getFirestore()
 
-    embeddedServer(Netty, port = config["PORT"].toInt(), host = config["HOST"]) {
+    embeddedServer(Netty, port = config["PORT"].toInt()) {
         configureRouting()
         configureSecurity()
         configureHTTP()

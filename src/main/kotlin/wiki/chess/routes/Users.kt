@@ -8,7 +8,6 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import wiki.chess.*
-import wiki.chess.enums.Country
 import wiki.chess.enums.Federation
 import wiki.chess.enums.Sex
 import wiki.chess.models.User
@@ -47,12 +46,12 @@ fun Route.users() {
 
         user.name.validateHasLength(call, 2, 32) ?: return@put
 
-        if (user.federation != Federation.FIDE.name && user.federation != Federation.NATIONAL.name) {
+        if (user.federation != Federation.FIDE && user.federation != Federation.NATIONAL) {
             call.respond(HttpStatusCode.BadRequest, "Federation must be FIDE or NATIONAL")
             return@put
         }
 
-        if (user.sex != Sex.MALE.name && user.sex != Sex.FEMALE.name) {
+        if (user.sex != Sex.MALE && user.sex != Sex.FEMALE) {
             call.respond(HttpStatusCode.BadRequest, "Sex must be MALE or FEMALE")
             return@put
         }
@@ -61,10 +60,10 @@ fun Route.users() {
             "name" to user.name,
             "bio" to user.bio,
             "chessLink" to user.chessLink,
-            "country" to user.country.ifEmpty { Country.UN.name },
+            "country" to (user.country?.name ?: ""),
             "email" to user.email,
-            "federation" to user.federation,
-            "sex" to user.sex
+            "federation" to user.federation.name,
+            "sex" to user.sex.name
         )
 
         db.collection("users").document(discordUser.id).update(data)

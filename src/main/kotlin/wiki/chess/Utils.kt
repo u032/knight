@@ -12,10 +12,7 @@ import wiki.chess.models.User
 
 suspend fun getDiscordUser(call: ApplicationCall): DiscordUser? {
     val token = call.request.headers[HttpHeaders.Authorization]
-    if (token == null) {
-        call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
-        return null
-    }
+        .validateIsNull(call, "Missing header Authorization") ?: return null
 
     return httpClient.get("https://discord.com/api/users/@me") {
         headers {
@@ -25,9 +22,14 @@ suspend fun getDiscordUser(call: ApplicationCall): DiscordUser? {
 }
 
 suspend fun getUser(call: ApplicationCall, id: String): User? {
-    val user = withContext(Dispatchers.IO) {
-        db.collection("users").document(id).get().get()
-    }.toObject(User::class.java)
+    val user = try {
+        withContext(Dispatchers.IO) {
+            db.collection("users").document(id).get().get()
+        }.toObject(User::class.java)
+    } catch (e: java.lang.RuntimeException) {
+        call.respond(HttpStatusCode.BadRequest, "Some field is incorrect")
+        return null
+    }
 
     if (user == null) {
         call.respond(HttpStatusCode.NotFound, "User not found")

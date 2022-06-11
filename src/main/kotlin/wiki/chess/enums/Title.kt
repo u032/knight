@@ -8,6 +8,5 @@ enum class Title {
     WGM,
     WIM,
     WFM,
-    NM,
-    RM // remove title
+    NM
 }

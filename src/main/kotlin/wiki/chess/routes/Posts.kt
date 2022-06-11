@@ -80,7 +80,7 @@ fun Route.posts() {
             return@delete
         }
 
-        if (user.id != post.author && user.role != Role.MOD.name && user.role != Role.ADMIN.name) {
+        if (user.id != post.author && user.role != Role.MOD && user.role != Role.ADMIN) {
             call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
             return@delete
         }
