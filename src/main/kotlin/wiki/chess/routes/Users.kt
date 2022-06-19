@@ -59,7 +59,7 @@ fun Route.users() {
         val data: Map<String, Any> = mapOf(
             "name" to user.name,
             "bio" to user.bio,
-            "chessLink" to user.chessLink,
+            "references" to user.references,
             "country" to (user.country?.name ?: ""),
             "email" to user.email,
             "federation" to user.federation.name,

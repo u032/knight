@@ -1,11 +1,14 @@
-val ktor_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
+val ktorVersion = "2.0.2"
+val kotlinVersion = "1.6.21"
+val logbackVersion = "1.2.11"
+val firebaseVersion = "8.2.0"
+val dotenvVersion = "6.3.1"
 
 plugins {
     application
     kotlin("jvm") version "1.6.21"
     kotlin("plugin.serialization") version "1.4.21"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "wiki.chess"
@@ -24,18 +27,27 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-cors-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-    implementation("io.ktor:ktor-client-java:$ktor_version")
-    implementation("io.ktor:ktor-client-core-jvm:$ktor_version")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-    implementation("com.google.firebase:firebase-admin:8.1.0")
-    implementation("io.github.cdimascio:dotenv-kotlin:6.3.1")
-    testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-auth-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-cors-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-client-java:$ktorVersion")
+    implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-resources:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
+    implementation("com.google.firebase:firebase-admin:$firebaseVersion")
+    implementation("io.github.cdimascio:dotenv-kotlin:$dotenvVersion")
+    testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+}
+
+tasks {
+    shadowJar {
+        archiveBaseName.set("knight")
+        archiveClassifier.set("")
+        archiveVersion.set("")
+    }
 }

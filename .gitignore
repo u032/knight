@@ -1,9 +1,13 @@
+.env
+.env.docker
+firebase.json
+
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-.env
+
 ### STS ###
 .apt_generated
 .classpath

@@ -1,0 +1,7 @@
+.idea
+build
+.env
+.env.example
+.gitignore
+LICENSE
+README.md

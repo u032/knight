@@ -1,7 +1,8 @@
 package wiki.chess.plugins
 
-import com.google.firebase.cloud.FirestoreClient
+import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.resources.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -11,10 +12,12 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import wiki.chess.config
+import wiki.chess.db
+import wiki.chess.discordApi
 import wiki.chess.enums.Country
 import wiki.chess.enums.Role
-import wiki.chess.httpClient
 import wiki.chess.models.DiscordUser
+import wiki.chess.resources.Users
 
 fun Application.configureSecurity() {
     install(Authentication) {
@@ -31,7 +34,7 @@ fun Application.configureSecurity() {
                     defaultScopes = listOf("identify")
                 )
             }
-            client = httpClient
+            client = HttpClient()
         }
     }
 
@@ -54,13 +57,11 @@ fun Application.configureSecurity() {
                 get("/callback") {
                     val principal: OAuthAccessTokenResponse.OAuth2? = call.authentication.principal()
                     val token = principal?.accessToken.toString()
-                    val discordUser: DiscordUser = httpClient.get("https://discord.com/api/users/@me") {
-                        headers {
-                            append(HttpHeaders.Authorization, "Bearer $token")
-                        }
+                    val discordUser: DiscordUser = discordApi.get(Users.Me()) {
+                        headers.append(HttpHeaders.Authorization, "Bearer $token")
                     }.body()
 
-                    val usersCollection = FirestoreClient.getFirestore().collection("users")
+                    val usersCollection = db.collection("users")
 
                     val user = withContext(Dispatchers.IO) {
                         usersCollection
@@ -73,7 +74,7 @@ fun Application.configureSecurity() {
                             "id" to discordUser.id.toLong(),
                             "name" to discordUser.username,
                             "bio" to "Look at me, I'm new!",
-                            "chessLink" to "",
+                            "references" to ArrayList<String>(),
                             "country" to Country.UN.name,
                             "email" to "",
                             "federation" to "",

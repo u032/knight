@@ -7,7 +7,7 @@ data class User(
     val id: Long = 0,
     val name: String = "",
     val bio: String = "",
-    val chessLink: String = "",
+    val references: ArrayList<String> = ArrayList(),
     val country: Country? = null,
     var email: String = "",
     val federation: Federation? = null,
