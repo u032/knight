@@ -4,6 +4,7 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
+import wiki.chess.routes.auth
 import wiki.chess.routes.mod
 import wiki.chess.routes.posts
 import wiki.chess.routes.users
@@ -14,6 +15,7 @@ fun Application.configureRouting() {
     }
 
     routing {
+        route("/auth") { auth() }
         route("/users") { users() }
         route("/posts") { posts() }
         route("/mod") { mod() }

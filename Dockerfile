@@ -3,7 +3,7 @@ COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN gradle shadowJar --no-daemon
 
-FROM ghcr.io/graalvm/jdk:java17-22.1.0
+FROM openjdk:17-alpine
 EXPOSE 8080:8080
 COPY --from=build /home/gradle/src/.env.docker /.env
 COPY --from=build /home/gradle/src/firebase.json /firebase.json

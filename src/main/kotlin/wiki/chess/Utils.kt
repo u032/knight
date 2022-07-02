@@ -12,6 +12,7 @@ import io.ktor.server.response.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import wiki.chess.models.DiscordError
 import wiki.chess.models.DiscordUser
 import wiki.chess.models.User
 import wiki.chess.resources.Users
@@ -21,11 +22,11 @@ suspend fun getDiscordUser(call: ApplicationCall): DiscordUser? {
         .validateIsNull(call, "Missing header Authorization") ?: return null
 
     val res = discordApi.get(Users.Me()) {
-        headers.append(HttpHeaders.Authorization, "Bearer $token")
+        bearerAuthorization(token)
     }
 
     if (!res.status.value.toString().startsWith("2")) {
-        call.respond(HttpStatusCode.fromValue(res.status.value), res.status.description)
+        call.respond(HttpStatusCode.fromValue(res.status.value), res.body<DiscordError>())
         return null
     }
 
@@ -48,6 +49,8 @@ suspend fun getUser(call: ApplicationCall, id: String): User? {
         return null
     }
 
+    user.id = id.toLong()
+
     return user
 }
 
@@ -57,12 +60,18 @@ suspend fun getUser(call: ApplicationCall): User? {
     return getUser(call, discordUser.id)
 }
 
+fun HttpMessageBuilder.bearerAuthorization(token: String) {
+    this.headers.append(HttpHeaders.Authorization, "Bearer $token")
+}
+
 val discordApi = HttpClient {
     defaultRequest {
-        url("https://discord.com/api/v9/")
+        url("https://discord.com/api/v10/")
     }
     install(Resources)
     install(ContentNegotiation) {
-        json(Json { ignoreUnknownKeys = true })
+        json(Json {
+            ignoreUnknownKeys = true
+        })
     }
 }

@@ -1,10 +1,11 @@
 package wiki.chess.models
 
+import kotlinx.serialization.Transient
 import wiki.chess.enums.*
 
 @kotlinx.serialization.Serializable
 data class User(
-    val id: Long = 0,
+    @Transient var id: Long = 0,
     val name: String = "",
     val bio: String = "",
     val references: ArrayList<String> = ArrayList(),

@@ -10,7 +10,6 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import wiki.chess.plugins.configureHTTP
 import wiki.chess.plugins.configureRouting
-import wiki.chess.plugins.configureSecurity
 import java.io.FileInputStream
 
 var dbNullable: Firestore? = null
@@ -26,7 +25,6 @@ fun main() {
 
     embeddedServer(Netty, port = config["PORT"].toInt()) {
         configureRouting()
-        configureSecurity()
         configureHTTP()
     }.start(wait = true)
 }

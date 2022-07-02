@@ -1,4 +1,4 @@
-val ktorVersion = "2.0.2"
+val ktorVersion = "2.0.3"
 val kotlinVersion = "1.6.21"
 val logbackVersion = "1.2.11"
 val firebaseVersion = "8.2.0"
@@ -28,13 +28,12 @@ repositories {
 
 dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-server-auth-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-cors-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-client-java:$ktorVersion")
     implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-java-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-resources:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
