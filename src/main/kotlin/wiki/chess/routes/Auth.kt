@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import wiki.chess.services.TokenService
+import wiki.chess.services.UserService
 
 fun Route.auth() {
     post("/authorize") {
@@ -11,7 +12,7 @@ fun Route.auth() {
 
         call.respond(accessToken)
 
-        TokenService.initializeUser(accessToken)
+        UserService.initializeUser(accessToken)
     }
 
     post("/refresh") {

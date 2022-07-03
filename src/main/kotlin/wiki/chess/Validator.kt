@@ -6,16 +6,12 @@ import io.ktor.server.response.*
 import wiki.chess.enums.Role
 import wiki.chess.models.User
 
-suspend fun String?.validateIsNull(call: ApplicationCall, message: String): String? {
-    if (this.isNullOrEmpty()) {
-        call.respond(HttpStatusCode.BadRequest, message)
+suspend fun <T> T.validateIsNull(call: ApplicationCall, error: wiki.chess.enums.Errors): T? {
+    if (this == null) {
+        call.respond(error.code, error.message)
         return null
     }
     return this
-}
-
-suspend fun String?.validateIsNull(call: ApplicationCall): String? {
-    return validateIsNull(call, "Required parameters or headers is missing")
 }
 
 suspend fun String.validateHasLength(call: ApplicationCall, min: Int, max: Int = 999999999): Validate? {

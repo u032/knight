@@ -12,6 +12,7 @@ import io.ktor.server.response.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import wiki.chess.enums.Errors
 import wiki.chess.models.DiscordError
 import wiki.chess.models.DiscordUser
 import wiki.chess.models.User
@@ -19,13 +20,13 @@ import wiki.chess.resources.Users
 
 suspend fun getDiscordUser(call: ApplicationCall): DiscordUser? {
     val token = call.request.headers[HttpHeaders.Authorization]
-        .validateIsNull(call, "Missing header Authorization") ?: return null
+        .validateIsNull(call, Errors.AUTH_HEADER) ?: return null
 
     val res = discordApi.get(Users.Me()) {
         bearerAuthorization(token)
     }
 
-    if (!res.status.value.toString().startsWith("2")) {
+    if (!res.status.isSuccess()) {
         call.respond(HttpStatusCode.fromValue(res.status.value), res.body<DiscordError>())
         return null
     }
@@ -39,7 +40,6 @@ suspend fun getUser(call: ApplicationCall, id: String): User? {
             db.collection("users").document(id).get().get()
         }.toObject(User::class.java)
     } catch (e: java.lang.RuntimeException) {
-        println(e.message)
         call.respond(HttpStatusCode.BadRequest, "Some field is incorrect")
         return null
     }

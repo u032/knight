@@ -5,29 +5,19 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import wiki.chess.*
+import wiki.chess.enums.Errors
 import wiki.chess.enums.Federation
 import wiki.chess.enums.Sex
 import wiki.chess.models.User
+import wiki.chess.services.UserService
 
 fun Route.users() {
-    get("/get") {
-        val usersDocuments = withContext(Dispatchers.IO) {
-            db.collection("users").get().get().documents
-        }
-
-        val users: ArrayList<User> = ArrayList()
-
-        usersDocuments.forEach { user ->
-            users.add(user.toObject(User::class.java).apply { email = "" })
-        }
-
-        call.respond(users)
+    get("/get/all") {
+        call.respond(UserService.getAllUsersSafety())
     }
     get("/get/{id}") {
-        val id = call.parameters["id"].validateIsNull(call) ?: return@get
+        val id = call.parameters["id"].validateIsNull(call, Errors.ID_PARAM) ?: return@get
         val user = getUser(call, id) ?: return@get
 
         user.email = ""

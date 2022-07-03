@@ -7,19 +7,11 @@ import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import wiki.chess.bearerAuthorization
 import wiki.chess.config
-import wiki.chess.db
 import wiki.chess.discordApi
-import wiki.chess.enums.Country
-import wiki.chess.enums.Role
 import wiki.chess.models.AccessToken
 import wiki.chess.models.DiscordError
-import wiki.chess.models.DiscordUser
 import wiki.chess.resources.OAuth2
-import wiki.chess.resources.Users
 
 object TokenService {
     suspend fun getToken(call: ApplicationCall): AccessToken? {
@@ -65,41 +57,11 @@ object TokenService {
             contentType(ContentType.Application.FormUrlEncoded)
         }
 
-        if (!res.status.value.toString().startsWith("2")) {
+        if (!res.status.isSuccess()) {
             call.respond(HttpStatusCode.fromValue(res.status.value), res.body<DiscordError>())
             return null
         }
 
         return res.body()
-    }
-
-    suspend fun initializeUser(accessToken: AccessToken) {
-        val discordUser: DiscordUser = discordApi.get(Users.Me()) {
-            bearerAuthorization(accessToken.access_token)
-        }.body()
-
-        val usersCollection = db.collection("users")
-
-        val user = withContext(Dispatchers.IO) {
-            usersCollection
-                .document(discordUser.id)
-                .get().get()
-        }
-
-        if (!user.exists()) {
-            val data: Map<String, Any> = mapOf(
-                "name" to discordUser.username,
-                "bio" to "Look at me, I'm new!",
-                "references" to ArrayList<String>(),
-                "country" to Country.UN.name,
-                "email" to "",
-                "federation" to "",
-                "rating" to 0,
-                "role" to Role.USER.name,
-                "sex" to "",
-                "title" to ""
-            )
-            usersCollection.document(discordUser.id).set(data)
-        }
     }
 }
