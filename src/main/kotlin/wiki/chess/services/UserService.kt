@@ -15,9 +15,11 @@ import wiki.chess.models.User
 import wiki.chess.resources.Users
 
 object UserService {
+    private const val collectionName = "users"
+
     suspend fun getAllUsersSafety(): List<User> {
         val usersDocuments = withContext(Dispatchers.IO) {
-            db.collection("users").get().get().documents
+            db.collection(collectionName).get().get().documents
         }
 
         val users: ArrayList<User> = ArrayList()
@@ -27,6 +29,12 @@ object UserService {
         }
 
         return users
+    }
+
+    suspend fun getUserById(id: String): User? {
+        return withContext(Dispatchers.IO) {
+            db.collection(collectionName).document(id).get().get()
+        }.toObject(User::class.java)
     }
 
     suspend fun initializeUser(accessToken: AccessToken) {
