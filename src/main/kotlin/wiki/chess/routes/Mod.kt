@@ -30,13 +30,10 @@ fun Route.mod() {
     delete("/clearTitle/{user}") {
         val userId = call.parameters["user"].validateIsNull(call, HttpError.USER_PARAM) ?: return@delete
 
-        // check user which called this route
         getUser(call)?.validateIsModerator(call) ?: return@delete
-
-        // check user by id
         getUser(call, userId) ?: return@delete
 
-        db.collection("users").document(userId).update("title", "")
+        db.collection("users").document(userId).update("title", null)
         call.respond(HttpStatusCode.OK, "Title cleared")
     }
     delete("/deleteUser/{user}") {
