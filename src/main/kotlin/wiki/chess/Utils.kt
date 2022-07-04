@@ -10,7 +10,7 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import kotlinx.serialization.json.Json
-import wiki.chess.enums.Errors
+import wiki.chess.enums.HttpError
 import wiki.chess.models.DiscordError
 import wiki.chess.models.DiscordUser
 import wiki.chess.models.User
@@ -18,7 +18,7 @@ import wiki.chess.services.UserService
 
 suspend fun getDiscordUser(call: ApplicationCall): DiscordUser? {
     val token = call.request.headers[HttpHeaders.Authorization]
-        .validateIsNull(call, Errors.AUTH_HEADER) ?: return null
+        .validateIsNull(call, HttpError.AUTH_HEADER) ?: return null
 
     val res = discordApi.get("users/@me") {
         bearerAuthorization(token)
@@ -33,7 +33,7 @@ suspend fun getDiscordUser(call: ApplicationCall): DiscordUser? {
 }
 
 suspend fun getUser(call: ApplicationCall, id: String): User? {
-    val user = UserService.getUserById(id).validateIsNull(call, Errors.USER_NOT_FOUND) ?: return null
+    val user = UserService.getUserById(id).validateIsNull(call, HttpError.USER_NOT_FOUND) ?: return null
 
     user.id = id.toLong()
 

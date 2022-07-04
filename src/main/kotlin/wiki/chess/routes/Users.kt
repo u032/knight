@@ -6,7 +6,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import wiki.chess.*
-import wiki.chess.enums.Errors
+import wiki.chess.enums.HttpError
 import wiki.chess.enums.Federation
 import wiki.chess.enums.Sex
 import wiki.chess.models.User
@@ -17,7 +17,7 @@ fun Route.users() {
         call.respond(UserService.getAllUsersSafety())
     }
     get("/get/{id}") {
-        val id = call.parameters["id"].validateIsNull(call, Errors.ID_PARAM) ?: return@get
+        val id = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@get
         val user = getUser(call, id) ?: return@get
 
         user.email = ""

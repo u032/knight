@@ -8,7 +8,7 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import wiki.chess.db
-import wiki.chess.enums.Errors
+import wiki.chess.enums.HttpError
 import wiki.chess.enums.Role
 import wiki.chess.getUser
 import wiki.chess.services.PostService
@@ -20,7 +20,7 @@ fun Route.posts() {
         call.respond(PostService.getAllPosts())
     }
     get("/get/{id}") {
-        val postId = call.parameters["id"].validateIsNull(call, Errors.ID_PARAM) ?: return@get
+        val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@get
 
         val post = PostService.getPostById(postId)
 
@@ -53,11 +53,11 @@ fun Route.posts() {
         call.respond(HttpStatusCode.OK, "Post created")
     }
     delete("/delete/{id}") {
-        val postId = call.parameters["id"].validateIsNull(call, Errors.ID_PARAM) ?: return@delete
+        val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@delete
 
         val user = getUser(call) ?: return@delete
 
-        val post = PostService.getPostById(postId).validateIsNull(call, Errors.POST_NOT_FOUND) ?: return@delete
+        val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@delete
 
         if (user.id != post.author && user.role != Role.MOD && user.role != Role.ADMIN) {
             call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
