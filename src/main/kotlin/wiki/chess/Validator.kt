@@ -14,8 +14,8 @@ suspend fun <T> T.validateIsNull(call: ApplicationCall, error: wiki.chess.enums.
     return this
 }
 
-suspend fun String.validateHasLength(call: ApplicationCall, min: Int, max: Int = 999999999): Validate? {
-    if (this.length in max..min) {
+suspend fun String.validateHasLength(call: ApplicationCall, min: Int, max: Int = 10000): Validate? {
+    if (this.length !in min..max) {
         call.respond(HttpStatusCode.BadRequest, "String length must be more than $min and less than $max")
         return null
     }

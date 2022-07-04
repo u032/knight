@@ -1,7 +1,6 @@
 package wiki.chess.services
 
 import io.ktor.client.call.*
-import io.ktor.client.plugins.resources.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
@@ -11,7 +10,6 @@ import wiki.chess.config
 import wiki.chess.discordApi
 import wiki.chess.models.AccessToken
 import wiki.chess.models.DiscordError
-import wiki.chess.resources.OAuth2
 
 object TokenService {
     suspend fun getToken(call: ApplicationCall): AccessToken? {
@@ -21,7 +19,7 @@ object TokenService {
             return null
         }
 
-        val res = discordApi.post(OAuth2.Token()) {
+        val res = discordApi.post("oauth2/token") {
             setBody(FormDataContent(Parameters.build {
                 append("client_id", config["DISCORD_ID"])
                 append("client_secret", config["DISCORD_SECRET"])
@@ -47,7 +45,7 @@ object TokenService {
             return null
         }
 
-        val res = discordApi.post(OAuth2.Token()) {
+        val res = discordApi.post("oauth2/token") {
             setBody(FormDataContent(Parameters.build {
                 append("client_id", config["DISCORD_ID"])
                 append("client_secret", config["DISCORD_SECRET"])

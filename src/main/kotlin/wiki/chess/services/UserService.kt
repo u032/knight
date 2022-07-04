@@ -1,7 +1,7 @@
 package wiki.chess.services
 
 import io.ktor.client.call.*
-import io.ktor.client.plugins.resources.*
+import io.ktor.client.request.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import wiki.chess.bearerAuthorization
@@ -12,7 +12,6 @@ import wiki.chess.enums.Role
 import wiki.chess.models.AccessToken
 import wiki.chess.models.DiscordUser
 import wiki.chess.models.User
-import wiki.chess.resources.Users
 
 object UserService {
     private const val collectionName = "users"
@@ -38,7 +37,7 @@ object UserService {
     }
 
     suspend fun initializeUser(accessToken: AccessToken) {
-        val discordUser: DiscordUser = discordApi.get(Users.Me()) {
+        val discordUser: DiscordUser = discordApi.get("users/@me") {
             bearerAuthorization(accessToken.access_token)
         }.body()
 

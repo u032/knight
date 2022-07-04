@@ -33,9 +33,7 @@ fun Route.posts() {
     }
     put("/create") {
         val collection = db.collection("posts")
-
         val user = getUser(call) ?: return@put
-
         val content = call.receiveText()
 
         content.validateHasLength(call, min = 8) ?: return@put

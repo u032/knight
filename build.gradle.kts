@@ -3,6 +3,7 @@ val kotlinVersion = "1.6.21"
 val logbackVersion = "1.2.11"
 val firestoreVersion = "3.3.0"
 val dotenvVersion = "6.3.1"
+val isDevelopment = true
 
 plugins {
     application
@@ -12,18 +13,16 @@ plugins {
 }
 
 group = "wiki.chess"
-version = "0.0.1"
+version = "1.0.0"
 
 application {
     mainClass.set("wiki.chess.ApplicationKt")
 
-    val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
 dependencies {
@@ -34,7 +33,6 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-java-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-client-resources:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("com.google.cloud:google-cloud-firestore:$firestoreVersion")
