@@ -8,15 +8,13 @@ import wiki.chess.models.Post
 object PostService {
     private const val collectionName = "posts"
 
-    suspend fun getAllPosts(): List<Post> {
-        val postsDocuments = withContext(Dispatchers.IO) {
+    suspend fun getAllPosts(): MutableMap<String, Post> {
+        val posts: MutableMap<String, Post> = mutableMapOf()
+
+        withContext(Dispatchers.IO) {
             db.collection(collectionName).get().get().documents
-        }
-
-        val posts: ArrayList<Post> = ArrayList()
-
-        postsDocuments.forEach { post ->
-            posts.add(post.toObject(Post::class.java))
+        }.forEach { post ->
+            posts[post.id] = post.toObject(Post::class.java)
         }
 
         return posts
@@ -28,8 +26,15 @@ object PostService {
         }.toObject(Post::class.java)
     }
 
-    fun deletePost(post: Post): Boolean {
+    fun incrementVotes(post: Post) {
+        db.collection(collectionName).document(post.id.toString()).update("votes", post.votes + 1)
+    }
+
+    fun decrementVotes(post: Post) {
+        db.collection(collectionName).document(post.id.toString()).update("votes", post.votes - 1)
+    }
+
+    fun deletePost(post: Post) {
         db.collection(collectionName).document(post.id.toString()).delete()
-        return true
     }
 }

@@ -7,8 +7,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import wiki.chess.*
 import wiki.chess.enums.HttpError
-import wiki.chess.enums.Federation
-import wiki.chess.enums.Sex
 import wiki.chess.models.User
 import wiki.chess.services.UserService
 
@@ -18,42 +16,37 @@ fun Route.users() {
     }
     get("/get/{id}") {
         val id = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@get
-        val user = getUser(call, id) ?: return@get
+        val user = UserService.getUser(call, id) ?: return@get
 
         user.email = ""
 
         call.respond(user)
     }
     get("/get/@me") {
-        val user = getUser(call) ?: return@get
+        val user = UserService.getUser(call) ?: return@get
 
         call.respond(user)
     }
     put("/update/@me") {
-        val discordUser = getDiscordUser(call) ?: return@put
+        val discordUser = UserService.getDiscordUser(call) ?: return@put
 
-        val user: User = call.receive()
+        val user: User = try {
+            call.receive()
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.BadRequest, e.message ?: "Unknown error")
+            return@put
+        }
 
         user.name.validateHasLength(call, 2, 32) ?: return@put
 
-        if (user.federation != Federation.FIDE && user.federation != Federation.NATIONAL) {
-            call.respond(HttpStatusCode.BadRequest, "Federation must be FIDE or NATIONAL")
-            return@put
-        }
-
-        if (user.sex != Sex.MALE && user.sex != Sex.FEMALE) {
-            call.respond(HttpStatusCode.BadRequest, "Sex must be MALE or FEMALE")
-            return@put
-        }
-
-        val data: Map<String, Any> = mapOf(
+        val data: Map<String, Any?> = mapOf(
             "name" to user.name,
             "bio" to user.bio,
             "references" to user.references,
-            "country" to (user.country?.name ?: ""),
+            "country" to user.country,
             "email" to user.email,
-            "federation" to user.federation.name,
-            "sex" to user.sex.name
+            "federation" to user.federation,
+            "sex" to user.sex
         )
 
         db.collection("users").document(discordUser.id).update(data)
@@ -61,9 +54,9 @@ fun Route.users() {
         call.respond(HttpStatusCode.OK, "Account updated")
     }
     delete("/delete/@me") {
-        val discordUser = getDiscordUser(call) ?: return@delete
+        val user = UserService.getDiscordUser(call) ?: return@delete
 
-        db.collection("users").document(discordUser.id).delete()
+        UserService.deleteUserById(user)
 
         call.respond(HttpStatusCode.OK, "Account deleted")
     }

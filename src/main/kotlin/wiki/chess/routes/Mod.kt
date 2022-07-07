@@ -7,7 +7,7 @@ import io.ktor.server.routing.*
 import wiki.chess.db
 import wiki.chess.enums.HttpError
 import wiki.chess.enums.Title
-import wiki.chess.getUser
+import wiki.chess.services.UserService
 import wiki.chess.validateIsModerator
 import wiki.chess.validateIsNull
 
@@ -15,14 +15,14 @@ fun Route.mod() {
     put("/updateTitle/{user}/{title}") {
         val userId = call.parameters["user"].validateIsNull(call, HttpError.USER_PARAM) ?: return@put
         val title = call.parameters["title"].validateIsNull(call, HttpError.TITLE_PARAM) ?: return@put
-        getUser(call)?.validateIsModerator(call) ?: return@put
+        UserService.getUser(call)?.validateIsModerator(call) ?: return@put
 
         if (Title.valueOf(title).name.isEmpty()) {
             call.respond(HttpStatusCode.NoContent, "No content")
             return@put
         }
 
-        getUser(call, userId) ?: return@put
+        UserService.getUser(call, userId) ?: return@put
 
         db.collection("users").document(userId).update("title", title)
         call.respond(HttpStatusCode.OK, "Title updated")
@@ -30,17 +30,17 @@ fun Route.mod() {
     delete("/clearTitle/{user}") {
         val userId = call.parameters["user"].validateIsNull(call, HttpError.USER_PARAM) ?: return@delete
 
-        getUser(call)?.validateIsModerator(call) ?: return@delete
-        getUser(call, userId) ?: return@delete
+        UserService.getUser(call)?.validateIsModerator(call) ?: return@delete
+        UserService.getUser(call, userId) ?: return@delete
 
         db.collection("users").document(userId).update("title", null)
         call.respond(HttpStatusCode.OK, "Title cleared")
     }
     delete("/deleteUser/{user}") {
         val userId = call.parameters["user"].validateIsNull(call, HttpError.USER_PARAM) ?: return@delete
-        val user = getUser(call, userId) ?: return@delete
+        val user = UserService.getUser(call, userId) ?: return@delete
 
-        val modUser = getUser(call)?.validateIsModerator(call) ?: return@delete
+        val modUser = UserService.getUser(call)?.validateIsModerator(call) ?: return@delete
 
         if (modUser.id == user.id) {
             call.respond(HttpStatusCode.BadRequest, "You can't delete yourself")

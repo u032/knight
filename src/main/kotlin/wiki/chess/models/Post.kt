@@ -5,5 +5,6 @@ data class Post(
     val id: Long = 0,
     val date: Long = 0,
     var author: Long = 0,
-    val content: String = ""
+    val content: String = "",
+    val votes: Long = 0
 )

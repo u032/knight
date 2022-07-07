@@ -10,8 +10,8 @@ import kotlinx.coroutines.withContext
 import wiki.chess.db
 import wiki.chess.enums.HttpError
 import wiki.chess.enums.Role
-import wiki.chess.getUser
 import wiki.chess.services.PostService
+import wiki.chess.services.UserService
 import wiki.chess.validateHasLength
 import wiki.chess.validateIsNull
 
@@ -22,18 +22,13 @@ fun Route.posts() {
     get("/get/{id}") {
         val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@get
 
-        val post = PostService.getPostById(postId)
-
-        if (post == null) {
-            call.respond(HttpStatusCode.NotFound, "Post not found")
-            return@get
-        }
+        val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@get
 
         call.respond(post)
     }
     put("/create") {
         val collection = db.collection("posts")
-        val user = getUser(call) ?: return@put
+        val user = UserService.getUser(call) ?: return@put
         val content = call.receiveText()
 
         content.validateHasLength(call, min = 8) ?: return@put
@@ -50,12 +45,30 @@ fun Route.posts() {
             collection.document(id.toString()).set(data).get()
         }
 
-        call.respond(HttpStatusCode.OK, "Post created")
+        call.respond(HttpStatusCode.OK)
+    }
+    put("/incrementVotes") {
+        val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@put
+        UserService.getUser(call) ?: return@put
+        val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@put
+
+        PostService.incrementVotes(post)
+
+        call.respond(HttpStatusCode.OK)
+    }
+    put("/decrementVotes") {
+        val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@put
+        UserService.getUser(call) ?: return@put
+        val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@put
+
+        PostService.decrementVotes(post)
+
+        call.respond(HttpStatusCode.OK)
     }
     delete("/delete/{id}") {
         val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@delete
 
-        val user = getUser(call) ?: return@delete
+        val user = UserService.getUser(call) ?: return@delete
 
         val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@delete
 
@@ -66,6 +79,6 @@ fun Route.posts() {
 
         PostService.deletePost(post)
 
-        call.respond(HttpStatusCode.OK, "Post deleted")
+        call.respond(HttpStatusCode.OK)
     }
 }
