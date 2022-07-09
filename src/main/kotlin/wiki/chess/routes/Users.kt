@@ -16,7 +16,7 @@ fun Route.users() {
     }
     get("/get/{id}") {
         val id = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@get
-        val user = UserService.getUser(call, id) ?: return@get
+        val user = UserService.getUserById(call, id) ?: return@get
 
         user.email = ""
 

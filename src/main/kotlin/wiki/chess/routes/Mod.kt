@@ -22,7 +22,7 @@ fun Route.mod() {
             return@put
         }
 
-        UserService.getUser(call, userId) ?: return@put
+        UserService.getUserById(call, userId) ?: return@put
 
         db.collection("users").document(userId).update("title", title)
         call.respond(HttpStatusCode.OK, "Title updated")
@@ -31,14 +31,14 @@ fun Route.mod() {
         val userId = call.parameters["user"].validateIsNull(call, HttpError.USER_PARAM) ?: return@delete
 
         UserService.getUser(call)?.validateIsModerator(call) ?: return@delete
-        UserService.getUser(call, userId) ?: return@delete
+        UserService.getUserById(call, userId) ?: return@delete
 
         db.collection("users").document(userId).update("title", null)
         call.respond(HttpStatusCode.OK, "Title cleared")
     }
     delete("/deleteUser/{user}") {
         val userId = call.parameters["user"].validateIsNull(call, HttpError.USER_PARAM) ?: return@delete
-        val user = UserService.getUser(call, userId) ?: return@delete
+        val user = UserService.getUserById(call, userId) ?: return@delete
 
         val modUser = UserService.getUser(call)?.validateIsModerator(call) ?: return@delete
 

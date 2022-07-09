@@ -35,7 +35,6 @@ fun Route.posts() {
 
         val id = withContext(Dispatchers.IO) { collection.get().get() }.documents.size + 1
         val data: Map<String, Any> = mapOf(
-            "id" to id,
             "content" to content,
             "author" to user.id,
             "date" to System.currentTimeMillis() / 1000L
@@ -47,7 +46,7 @@ fun Route.posts() {
 
         call.respond(HttpStatusCode.OK)
     }
-    put("/incrementVotes") {
+    put("/votes/increment/{id}") {
         val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@put
         UserService.getUser(call) ?: return@put
         val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@put
@@ -56,7 +55,7 @@ fun Route.posts() {
 
         call.respond(HttpStatusCode.OK)
     }
-    put("/decrementVotes") {
+    put("/votes/decrement/{id}") {
         val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@put
         UserService.getUser(call) ?: return@put
         val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@put

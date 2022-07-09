@@ -21,6 +21,16 @@ import wiki.chess.validateIsNull
 object UserService {
     private const val collectionName = "users"
 
+    private suspend fun getDiscordUserByToken(token: String): DiscordUser? {
+        val res = discordApi.get("users/@me") {
+            bearerAuthorization(token)
+        }
+
+        if (!res.status.isSuccess()) return null
+
+        return res.body()
+    }
+
     suspend fun getDiscordUser(call: ApplicationCall): DiscordUser? {
         val token = call.request.headers[HttpHeaders.Authorization]
             .validateIsNull(call, HttpError.AUTH_HEADER) ?: return null
@@ -37,20 +47,31 @@ object UserService {
         return res.body()
     }
 
-    suspend fun getUser(call: ApplicationCall, id: String): User? {
+    private suspend fun getUser(id: String): User? {
         val user = withContext(Dispatchers.IO) {
             db.collection(collectionName).document(id).get().get()
-        }.toObject(User::class.java).validateIsNull(call, HttpError.USER_NOT_FOUND) ?: return null
+        }.toObject(User::class.java) ?: return null
 
-        user.id = id.toLong()
+        user.id = id
+        user.notifications = mapOf()
 
         return user
+    }
+
+    suspend fun getUserById(call: ApplicationCall, id: String): User? {
+        return getUser(id).validateIsNull(call, HttpError.USER_NOT_FOUND)
     }
 
     suspend fun getUser(call: ApplicationCall): User? {
         val discordUser = getDiscordUser(call) ?: return null
 
-        return getUser(call, discordUser.id)
+        return getUserById(call, discordUser.id)
+    }
+
+    suspend fun getUserByToken(token: String): User? {
+        val discordUser = getDiscordUserByToken(token) ?: return null
+
+        return getUser(discordUser.id)
     }
 
     suspend fun getAllUsersSafety(): Map<String, User> {
@@ -59,7 +80,10 @@ object UserService {
         withContext(Dispatchers.IO) {
             db.collection(collectionName).get().get().documents
         }.forEach { user ->
-            users[user.id] = user.toObject(User::class.java).apply { email = "" }
+            users[user.id] = user.toObject(User::class.java).apply {
+                email = ""
+                notifications = mapOf()
+            }
         }
 
         return users
@@ -70,11 +94,9 @@ object UserService {
     }
 
     suspend fun initializeUser(accessToken: AccessToken) {
-        val discordUser: DiscordUser = discordApi.get("users/@me") {
-            bearerAuthorization(accessToken.access_token)
-        }.body()
+        val discordUser = getDiscordUserByToken(accessToken.access_token)!!
 
-        val usersCollection = db.collection("users")
+        val usersCollection = db.collection(collectionName)
 
         val user = withContext(Dispatchers.IO) {
             usersCollection
@@ -93,7 +115,8 @@ object UserService {
                 "rating" to 0,
                 "role" to Role.USER.name,
                 "sex" to null,
-                "title" to null
+                "title" to null,
+                "notifications" to mapOf<String, String>()
             )
             usersCollection.document(discordUser.id).set(data)
         }

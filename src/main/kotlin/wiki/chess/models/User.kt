@@ -5,7 +5,7 @@ import wiki.chess.enums.*
 
 @kotlinx.serialization.Serializable
 data class User(
-    @Transient var id: Long = 0,
+    @Transient var id: String = "0",
     val name: String = "",
     val bio: String = "",
     val references: ArrayList<String> = ArrayList(),
@@ -15,5 +15,6 @@ data class User(
     val rating: Long = 0,
     val role: Role = Role.USER,
     val sex: Sex? = null,
-    val title: Title? = null
+    val title: Title? = null,
+    var notifications: Map<String, Map<String, String>>? = null
 )

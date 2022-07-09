@@ -20,4 +20,10 @@ fun Route.auth() {
 
         call.respond(accessToken)
     }
+
+    post("/revoke") {
+        val result = TokenService.revokeToken(call) ?: return@post
+
+        call.respond(result)
+    }
 }

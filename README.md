@@ -1,7 +1,7 @@
 # Knight
 Chess Social Network,
 [ui](https://github.com/u032/knight-ui),
-[api](https://headcrabj.github.io/knight-api)
+[api](https://headcrab.gitbook.io/knight/)
 
 ## Instruction
 1. Clone this repository.

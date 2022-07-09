@@ -1,5 +1,5 @@
 .env
-.env.docker
+.env.prod
 firebase.json
 firestore.json
 
