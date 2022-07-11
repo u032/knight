@@ -5,8 +5,10 @@ enum class Title {
     IM,
     FM,
     CM,
+    KM,
     WGM,
     WIM,
     WFM,
+    WCM,
     NM
 }
