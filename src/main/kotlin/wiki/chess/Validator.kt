@@ -6,9 +6,9 @@ import io.ktor.server.response.*
 import wiki.chess.enums.Role
 import wiki.chess.models.User
 
-suspend fun <T> T.validateIsNull(call: ApplicationCall, error: wiki.chess.enums.HttpError): T? {
+suspend fun <T> T.validateIsNull(call: ApplicationCall, status: HttpStatusCode, message: String): T? {
     if (this == null) {
-        call.respond(error.code, error.message)
+        call.respond(status, message)
         return null
     }
     return this

@@ -8,15 +8,11 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import wiki.chess.config
 import wiki.chess.discordApi
-import wiki.chess.enums.HttpError
 import wiki.chess.models.AccessToken
 import wiki.chess.models.DiscordError
-import wiki.chess.validateIsNull
 
 object TokenService {
-    suspend fun getToken(call: ApplicationCall): AccessToken? {
-        val code = call.request.queryParameters["code"].validateIsNull(call, HttpError.CODE_PARAM) ?: return null
-
+    suspend fun getToken(call: ApplicationCall, code: String): AccessToken? {
         val res = discordApi.post("oauth2/token") {
             setBody(FormDataContent(Parameters.build {
                 append("client_id", config["DISCORD_ID"])
@@ -36,9 +32,7 @@ object TokenService {
         return res.body()
     }
 
-    suspend fun refreshToken(call: ApplicationCall): AccessToken? {
-        val token = call.request.queryParameters["token"].validateIsNull(call, HttpError.TOKEN_PARAM) ?: return null
-
+    suspend fun refreshToken(call: ApplicationCall, token: String): AccessToken? {
         val res = discordApi.post("oauth2/token") {
             setBody(FormDataContent(Parameters.build {
                 append("client_id", config["DISCORD_ID"])
@@ -57,9 +51,7 @@ object TokenService {
         return res.body()
     }
 
-    suspend fun revokeToken(call: ApplicationCall): String? {
-        val token = call.request.queryParameters["token"].validateIsNull(call, HttpError.TOKEN_PARAM) ?: return null
-
+    suspend fun revokeToken(call: ApplicationCall, token: String): String? {
         val res = discordApi.post("oauth2/token/revoke") {
             setBody(FormDataContent(Parameters.build {
                 append("client_id", config["DISCORD_ID"])

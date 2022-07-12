@@ -7,28 +7,27 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import wiki.chess.db
-import wiki.chess.enums.HttpError
+import wiki.chess.*
 import wiki.chess.enums.Role
 import wiki.chess.services.PostService
-import wiki.chess.services.UserService
-import wiki.chess.validateHasLength
-import wiki.chess.validateIsNull
 
 fun Route.posts() {
-    get("/get/all") {
-        call.respond(PostService.getAllPosts())
-    }
-    get("/get/{id}") {
-        val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@get
+    get {
+        val limit = call.getQuery("limit")?.toIntOrNull() ?: return@get
+        val before = call.getQuery("before", false)!!
 
-        val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@get
+        call.respond(PostService.getPosts(limit, before))
+    }
+
+    get("/{id}") {
+        val post = call.getPost("id") ?: return@get
 
         call.respond(post)
     }
+
     put("/create") {
         val collection = db.collection("posts")
-        val user = UserService.getUser(call) ?: return@put
+        val user = call.getUser() ?: return@put
         val content = call.receiveText()
 
         content.validateHasLength(call, min = 8) ?: return@put
@@ -46,33 +45,31 @@ fun Route.posts() {
 
         call.respond(HttpStatusCode.OK)
     }
-    put("/votes/increment/{id}") {
-        val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@put
-        UserService.getUser(call) ?: return@put
-        val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@put
+
+    put("/{id}/incrementVotes") {
+        call.getUser() ?: return@put
+        val post = call.getPost("id") ?: return@put
 
         PostService.incrementVotes(post)
 
         call.respond(HttpStatusCode.OK)
     }
-    put("/votes/decrement/{id}") {
-        val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@put
-        UserService.getUser(call) ?: return@put
-        val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@put
+
+    put("/{id}/decrementVotes") {
+        call.getUser() ?: return@put
+        val post = call.getPost("id") ?: return@put
 
         PostService.decrementVotes(post)
 
         call.respond(HttpStatusCode.OK)
     }
-    delete("/delete/{id}") {
-        val postId = call.parameters["id"].validateIsNull(call, HttpError.ID_PARAM) ?: return@delete
 
-        val user = UserService.getUser(call) ?: return@delete
-
-        val post = PostService.getPostById(postId).validateIsNull(call, HttpError.POST_NOT_FOUND) ?: return@delete
+    delete("/{id}/delete") {
+        val user = call.getUser() ?: return@delete
+        val post = call.getPost("id") ?: return@delete
 
         if (user.id != post.author && user.role != Role.MOD && user.role != Role.ADMIN) {
-            call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
+            call.respond(HttpStatusCode.Forbidden)
             return@delete
         }
 

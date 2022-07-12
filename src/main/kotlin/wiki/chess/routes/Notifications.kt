@@ -19,7 +19,7 @@ fun Route.notifications() {
             val user: User? = UserService.getUserByToken(frame.readText())
 
             if (user == null) {
-                close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Token invalid"))
+                close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Token invalid or user not found"))
                 return@webSocket
             }
 
@@ -27,10 +27,10 @@ fun Route.notifications() {
                 if (value == null) return@addSnapshotListener
 
                 val internalUser = value.toObject(User::class.java) ?: return@addSnapshotListener
-                val notifications = internalUser.notifications
+                val data = internalUser.notifications
 
                 runBlocking {
-                    sendSerialized(notifications ?: Any())
+                    sendSerialized(data)
                 }
             }
         }

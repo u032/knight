@@ -3,51 +3,33 @@ package wiki.chess.services
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import wiki.chess.bearerAuthorization
 import wiki.chess.db
 import wiki.chess.discordApi
-import wiki.chess.enums.HttpError
 import wiki.chess.enums.Role
 import wiki.chess.models.AccessToken
 import wiki.chess.models.DiscordError
 import wiki.chess.models.DiscordUser
 import wiki.chess.models.User
-import wiki.chess.validateIsNull
 
 object UserService {
     private const val collectionName = "users"
 
-    private suspend fun getDiscordUserByToken(token: String): DiscordUser? {
-        val res = discordApi.get("users/@me") {
-            bearerAuthorization(token)
-        }
-
-        if (!res.status.isSuccess()) return null
-
-        return res.body()
-    }
-
-    suspend fun getDiscordUser(call: ApplicationCall): DiscordUser? {
-        val token = call.request.headers[HttpHeaders.Authorization]
-            .validateIsNull(call, HttpError.AUTH_HEADER) ?: return null
-
+    suspend fun getDiscordUserByToken(token: String): DiscordUser {
         val res = discordApi.get("users/@me") {
             bearerAuthorization(token)
         }
 
         if (!res.status.isSuccess()) {
-            call.respond(HttpStatusCode.fromValue(res.status.value), res.body<DiscordError>())
-            return null
+            return DiscordUser(error = res.body<DiscordError>().apply { status = res.status })
         }
 
         return res.body()
     }
 
-    private suspend fun getUser(id: String): User? {
+    suspend fun getUserById(id: String): User? {
         val user = withContext(Dispatchers.IO) {
             db.collection(collectionName).document(id).get().get()
         }.toObject(User::class.java) ?: return null
@@ -58,43 +40,31 @@ object UserService {
         return user
     }
 
-    suspend fun getUserById(call: ApplicationCall, id: String): User? {
-        return getUser(id).validateIsNull(call, HttpError.USER_NOT_FOUND)
-    }
-
-    suspend fun getUser(call: ApplicationCall): User? {
-        val discordUser = getDiscordUser(call) ?: return null
-
-        return getUserById(call, discordUser.id)
-    }
-
     suspend fun getUserByToken(token: String): User? {
-        val discordUser = getDiscordUserByToken(token) ?: return null
+        val discordUser = getDiscordUserByToken(token)
 
-        return getUser(discordUser.id)
+        return getUserById(discordUser.id)
     }
 
-    suspend fun getAllUsersSafety(): Map<String, User> {
-        val users: MutableMap<String, User> = mutableMapOf()
-
-        withContext(Dispatchers.IO) {
-            db.collection(collectionName).get().get().documents
-        }.forEach { user ->
-            users[user.id] = user.toObject(User::class.java).apply {
+    suspend fun getUsers(limit: Int, before: String): Map<String, User> {
+        return GeneralService.get(collectionName, limit, before) { user ->
+            user.toObject(User::class.java).apply {
                 email = ""
                 notifications = mapOf()
             }
         }
-
-        return users
     }
 
-    fun deleteUserById(user: DiscordUser) {
+    fun updateUser(user: User, data: Map<String, Any?>) {
+        db.collection(collectionName).document(user.id).update(data)
+    }
+
+    fun deleteUser(user: User) {
         db.collection(collectionName).document(user.id).delete()
     }
 
     suspend fun initializeUser(accessToken: AccessToken) {
-        val discordUser = getDiscordUserByToken(accessToken.access_token)!!
+        val discordUser = getDiscordUserByToken(accessToken.access_token)
 
         val usersCollection = db.collection(collectionName)
 

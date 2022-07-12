@@ -1,7 +1,12 @@
 package wiki.chess.models
 
-@kotlinx.serialization.Serializable
+import io.ktor.http.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+
+@Serializable
 data class DiscordError(
+    @Transient var status: HttpStatusCode = HttpStatusCode.OK,
     val error: String = "",
     val error_description: String = ""
 )

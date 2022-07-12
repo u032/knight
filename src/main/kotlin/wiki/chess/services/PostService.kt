@@ -8,16 +8,10 @@ import wiki.chess.models.Post
 object PostService {
     private const val collectionName = "posts"
 
-    suspend fun getAllPosts(): MutableMap<String, Post> {
-        val posts: MutableMap<String, Post> = mutableMapOf()
-
-        withContext(Dispatchers.IO) {
-            db.collection(collectionName).get().get().documents
-        }.forEach { post ->
-            posts[post.id] = post.toObject(Post::class.java)
+    suspend fun getPosts(limit: Int, before: String): Map<String, Post> {
+        return GeneralService.get(collectionName, limit, before) { post ->
+            post.toObject(Post::class.java)
         }
-
-        return posts
     }
 
     suspend fun getPostById(id: String): Post? {
