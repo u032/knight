@@ -82,11 +82,13 @@ object UserService {
                 "country" to null,
                 "email" to "",
                 "federation" to null,
-                "rating" to 0,
+                "rating" to 1000,
                 "role" to Role.USER.name,
                 "sex" to null,
                 "title" to null,
-                "notifications" to mapOf<String, String>()
+                "notifications" to mapOf<String, String>(),
+                "birthday" to 0,
+                "registered_at" to System.currentTimeMillis() / 1000L
             )
             usersCollection.document(discordUser.id).set(data)
         }

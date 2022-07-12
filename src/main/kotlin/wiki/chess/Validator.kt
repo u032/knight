@@ -14,6 +14,14 @@ suspend fun <T> T.validateIsNull(call: ApplicationCall, status: HttpStatusCode, 
     return this
 }
 
+suspend fun Int.validateIsNegative(call: ApplicationCall, status: HttpStatusCode, message: String): Boolean {
+    if (this <= 0) {
+        call.respond(status, message)
+        return true
+    }
+    return false
+}
+
 suspend fun String.validateHasLength(call: ApplicationCall, min: Int, max: Int = 10000): Validate? {
     if (this.length !in min..max) {
         call.respond(HttpStatusCode.BadRequest, "String length must be more than $min and less than $max")

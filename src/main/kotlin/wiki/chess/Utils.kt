@@ -34,10 +34,10 @@ suspend fun ApplicationCall.getPath(parameter: String): String? {
 
 suspend fun ApplicationCall.getQuery(parameter: String, required: Boolean = true): String? {
     return if (required) {
-        request.queryParameters[parameter] ?: ""
-    } else {
         request.queryParameters[parameter]
             .validateIsNull(this, HttpStatusCode.BadRequest, "Query parameter $parameter missing")
+    } else {
+        request.queryParameters[parameter] ?: ""
     }
 }
 

@@ -16,6 +16,9 @@ fun Route.posts() {
         val limit = call.getQuery("limit")?.toIntOrNull() ?: return@get
         val before = call.getQuery("before", false)!!
 
+        if (limit.validateIsNegative(call, HttpStatusCode.BadRequest, "Number must not be negative"))
+            return@get
+
         call.respond(PostService.getPosts(limit, before))
     }
 

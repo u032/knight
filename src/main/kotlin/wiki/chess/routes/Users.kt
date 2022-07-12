@@ -10,11 +10,15 @@ import wiki.chess.getUser
 import wiki.chess.models.User
 import wiki.chess.services.UserService
 import wiki.chess.validateHasLength
+import wiki.chess.validateIsNegative
 
 fun Route.users() {
     get {
         val limit = call.getQuery("limit")?.toIntOrNull() ?: return@get
-        val before = call.getQuery("before")!!
+        val before = call.getQuery("before", false)!!
+
+        if (limit.validateIsNegative(call, HttpStatusCode.BadRequest, "Number must not be negative"))
+            return@get
 
         call.respond(UserService.getUsers(limit, before))
     }
