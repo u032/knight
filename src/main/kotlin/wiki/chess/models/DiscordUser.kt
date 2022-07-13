@@ -7,5 +7,6 @@ import kotlinx.serialization.Transient
 data class DiscordUser(
     val id: String = "",
     val username: String = "",
+    val avatar: String = "",
     @Transient val error: DiscordError? = null
 )

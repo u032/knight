@@ -62,13 +62,14 @@ object UserService {
     }
 
     suspend fun initializeUser(accessToken: AccessToken) {
-        val discordUser = getDiscordUserByToken(accessToken.accessToken)
+        val discordUser = getDiscordUserByToken(accessToken.access_token)
         val document = db.collection(collectionName).document(discordUser.id)
         val user = withContext(Dispatchers.IO) { document.get().get() }
 
         if (!user.exists()) {
             val data: Map<String, Any?> = mapOf(
                 "name" to discordUser.username,
+                "avatar" to "${config["DISCORD_CDN"]}avatars/${discordUser.id}/${discordUser.avatar}.png",
                 "bio" to "Look at me, I'm new!",
                 "references" to ArrayList<String>(),
                 "country" to null,
