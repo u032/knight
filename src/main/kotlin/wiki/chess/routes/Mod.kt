@@ -8,11 +8,11 @@ import wiki.chess.db
 import wiki.chess.enums.Title
 import wiki.chess.getPath
 import wiki.chess.getUser
-import wiki.chess.validateIsModerator
+import wiki.chess.isModerator
 
 fun Route.mod() {
     put("/{user}/title/{title}") {
-        val user = call.getUser()?.validateIsModerator(call) ?: return@put
+        val user = call.getUser()?.isModerator(call) ?: return@put
         val title = call.getPath("title") ?: return@put
 
         if (Title.valueOf(title).name.isEmpty()) {
@@ -27,7 +27,7 @@ fun Route.mod() {
     }
 
     delete("/{user}/title/clear") {
-        call.getUser()?.validateIsModerator(call) ?: return@delete
+        call.getUser()?.isModerator(call) ?: return@delete
         val user = call.getUser("user") ?: return@delete
 
         db.collection("users").document(user.id).update("title", null)
@@ -36,7 +36,7 @@ fun Route.mod() {
 
     delete("/{user}/delete") {
         val user = call.getUser("user") ?: return@delete
-        val modUser = call.getUser()?.validateIsModerator(call) ?: return@delete
+        val modUser = call.getUser()?.isModerator(call) ?: return@delete
 
         if (modUser.id == user.id) {
             call.respond(HttpStatusCode.BadRequest, "You can't delete yourself")

@@ -5,9 +5,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import wiki.chess.bearerAuthorization
-import wiki.chess.db
-import wiki.chess.discordApi
+import wiki.chess.*
 import wiki.chess.enums.Role
 import wiki.chess.models.AccessToken
 import wiki.chess.models.DiscordError
@@ -46,9 +44,9 @@ object UserService {
         return getUserById(discordUser.id)
     }
 
-    suspend fun getUsers(limit: Int, before: String): Map<String, User> {
-        return GeneralService.get(collectionName, limit, before) { user ->
-            user.toObject(User::class.java).apply {
+    suspend fun getUsers(limit: Int, before: String, sort: String, reverse: Boolean): List<User> {
+        return GeneralService.get(collectionName, limit, before, sort, reverse) { user ->
+            user.toUser().apply {
                 email = ""
                 notifications = mapOf()
             }
@@ -64,15 +62,9 @@ object UserService {
     }
 
     suspend fun initializeUser(accessToken: AccessToken) {
-        val discordUser = getDiscordUserByToken(accessToken.access_token)
-
-        val usersCollection = db.collection(collectionName)
-
-        val user = withContext(Dispatchers.IO) {
-            usersCollection
-                .document(discordUser.id)
-                .get().get()
-        }
+        val discordUser = getDiscordUserByToken(accessToken.accessToken)
+        val document = db.collection(collectionName).document(discordUser.id)
+        val user = withContext(Dispatchers.IO) { document.get().get() }
 
         if (!user.exists()) {
             val data: Map<String, Any?> = mapOf(
@@ -86,11 +78,11 @@ object UserService {
                 "role" to Role.USER.name,
                 "sex" to null,
                 "title" to null,
-                "notifications" to mapOf<String, String>(),
+                "notifications" to mapOf<String, Map<String, String>>(),
                 "birthday" to 0,
-                "registered_at" to System.currentTimeMillis() / 1000L
+                "registered_at" to currentTime()
             )
-            usersCollection.document(discordUser.id).set(data)
+            document.set(data)
         }
     }
 }

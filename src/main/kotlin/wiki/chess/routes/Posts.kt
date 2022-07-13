@@ -13,11 +13,8 @@ import wiki.chess.services.PostService
 
 fun Route.posts() {
     get {
-        val limit = call.getQuery("limit")?.toIntOrNull() ?: return@get
+        val limit = call.getQuery("limit")?.toInt(call)?.isNegative(call) ?: return@get
         val before = call.getQuery("before", false)!!
-
-        if (limit.validateIsNegative(call, HttpStatusCode.BadRequest, "Number must not be negative"))
-            return@get
 
         call.respond(PostService.getPosts(limit, before))
     }
@@ -33,18 +30,18 @@ fun Route.posts() {
         val user = call.getUser() ?: return@put
         val content = call.receiveText()
 
-        content.validateHasLength(call, min = 8) ?: return@put
+        content.hasLength(call, min = 8) ?: return@put
 
         val id = withContext(Dispatchers.IO) { collection.get().get() }.documents.size + 1
         val data: Map<String, Any> = mapOf(
             "content" to content,
             "author" to user.id,
-            "date" to System.currentTimeMillis() / 1000L
+            "created" to currentTime(),
+            "edited" to 0,
+            "votes" to 0
         )
 
-        withContext(Dispatchers.IO) {
-            collection.document(id.toString()).set(data).get()
-        }
+        collection.document(id.toString()).set(data)
 
         call.respond(HttpStatusCode.OK)
     }
@@ -64,6 +61,27 @@ fun Route.posts() {
 
         PostService.decrementVotes(post)
 
+        call.respond(HttpStatusCode.OK)
+    }
+
+    put("/{id}/edit") {
+        val user = call.getUser() ?: return@put
+        val post = call.getPost("id") ?: return@put
+        val content = call.receiveText()
+
+        content.hasLength(call, min = 8) ?: return@put
+
+        if (user.id != post.author) {
+            call.respond(HttpStatusCode.Forbidden)
+            return@put
+        }
+
+        val editedPost: Map<String, Any> = mapOf(
+            "content" to content,
+            "edited" to currentTime()
+        )
+
+        PostService.editPost(post, editedPost)
         call.respond(HttpStatusCode.OK)
     }
 

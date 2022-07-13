@@ -5,22 +5,19 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import wiki.chess.getQuery
-import wiki.chess.getUser
+import wiki.chess.*
 import wiki.chess.models.User
 import wiki.chess.services.UserService
-import wiki.chess.validateHasLength
-import wiki.chess.validateIsNegative
 
 fun Route.users() {
     get {
-        val limit = call.getQuery("limit")?.toIntOrNull() ?: return@get
+        val limit = call.getQuery("limit")?.toInt(call)?.isNegative(call) ?: return@get
         val before = call.getQuery("before", false)!!
+        val sort = call.getQuery("sort", false)!!
+        val reverse = call.getQuery("reverse", false)!!
+        val reverseBool = if (reverse.isNotEmpty()) reverse.toBoolean(call) ?: return@get else false
 
-        if (limit.validateIsNegative(call, HttpStatusCode.BadRequest, "Number must not be negative"))
-            return@get
-
-        call.respond(UserService.getUsers(limit, before))
+        call.respond(UserService.getUsers(limit, before, sort, reverseBool))
     }
 
     get("/{id}") {
@@ -47,7 +44,7 @@ fun Route.users() {
             return@put
         }
 
-        content.name.validateHasLength(call, 2, 32) ?: return@put
+        content.name.hasLength(call, 2, 32) ?: return@put
 
         val data: Map<String, Any?> = mapOf(
             "name" to content.name,
@@ -56,7 +53,8 @@ fun Route.users() {
             "country" to content.country,
             "email" to content.email,
             "federation" to content.federation,
-            "sex" to content.sex
+            "sex" to content.sex,
+            "birthday" to content.birthday
         )
 
         UserService.updateUser(user, data)
