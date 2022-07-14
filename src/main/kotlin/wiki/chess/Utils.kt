@@ -7,6 +7,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import kotlinx.serialization.json.Json
 import wiki.chess.models.DiscordUser
@@ -40,6 +41,11 @@ suspend fun ApplicationCall.getQuery(parameter: String, required: Boolean = true
     } else {
         request.queryParameters[parameter] ?: ""
     }
+}
+
+suspend fun ApplicationCall.getForm(parameter: String): String? {
+    return receiveParameters()[parameter]
+        .isNull(this, HttpStatusCode.BadRequest, "Form parameter $parameter missing")
 }
 
 suspend fun ApplicationCall.getDiscordUser(): DiscordUser? {
