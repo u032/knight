@@ -20,5 +20,6 @@ data class User(
     var notifications: Map<String, Map<String, String>> = mapOf(),
     val birthday: Long = 0,
     val registered_at: Long = 0,
-    val badges: List<Badge> = listOf()
+    val badges: List<Badge> = listOf(),
+    val fide_id: Long = 0
 )

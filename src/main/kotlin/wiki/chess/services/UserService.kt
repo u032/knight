@@ -84,7 +84,8 @@ object UserService {
                 "notifications" to mapOf<String, Map<String, String>>(),
                 "birthday" to 0,
                 "registered_at" to currentTime(),
-                "badges" to listOf<String>()
+                "badges" to listOf<String>(),
+                "fide_id" to 0
             )
             document.set(data)
         }
