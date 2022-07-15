@@ -4,6 +4,5 @@ enum class Badge {
     VERIFIED,
     PATRON,
     TITLED,
-    DEV,
-    UNVERIFIED
+    DEV
 }
