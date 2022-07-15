@@ -9,8 +9,8 @@ import wiki.chess.toPost
 object PostService {
     private const val collectionName = "posts"
 
-    suspend fun getPosts(limit: Int, before: String): List<Post> {
-        return GeneralService.get(collectionName, limit, before, "", false) { post ->
+    suspend fun getPosts(limit: Int, before: String, sort: String): List<Post> {
+        return GeneralService.get(collectionName, limit, before, sort) { post ->
             post.toPost()
         }
     }

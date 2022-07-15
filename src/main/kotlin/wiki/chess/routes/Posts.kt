@@ -15,8 +15,9 @@ fun Route.posts() {
     get {
         val limit = call.getQuery("limit")?.toInt(call)?.isNegative(call) ?: return@get
         val before = call.getQuery("before", false)!!
+        val sort = call.getQuery("sort", false)!!
 
-        call.respond(PostService.getPosts(limit, before))
+        call.respond(PostService.getPosts(limit, before, sort))
     }
 
     get("/{id}") {

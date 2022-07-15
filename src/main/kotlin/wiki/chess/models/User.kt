@@ -5,11 +5,11 @@ import wiki.chess.enums.*
 
 @Serializable
 data class User(
-    var id: String = "0",
+    var id: String = "",
     val avatar: String = "",
     val name: String = "",
     val bio: String = "",
-    val references: ArrayList<String> = ArrayList(),
+    val references: List<String> = listOf(),
     val country: Country? = null,
     var email: String = "",
     val federation: Federation? = null,
@@ -19,5 +19,6 @@ data class User(
     val title: Title? = null,
     var notifications: Map<String, Map<String, String>> = mapOf(),
     val birthday: Long = 0,
-    val registered_at: Long = 0
+    val registered_at: Long = 0,
+    val badges: List<Badge> = listOf()
 )

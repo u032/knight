@@ -14,10 +14,8 @@ fun Route.users() {
         val limit = call.getQuery("limit")?.toInt(call)?.isNegative(call) ?: return@get
         val before = call.getQuery("before", false)!!
         val sort = call.getQuery("sort", false)!!
-        val reverse = call.getQuery("reverse", false)!!
-        val reverseBool = if (reverse.isNotEmpty()) reverse.toBoolean(call) ?: return@get else false
 
-        call.respond(UserService.getUsers(limit, before, sort, reverseBool))
+        call.respond(UserService.getUsers(limit, before, sort))
     }
 
     get("/{id}") {

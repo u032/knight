@@ -27,13 +27,15 @@ object UserService {
         return res.body()
     }
 
-    suspend fun getUserById(id: String): User? {
+    suspend fun getUserById(id: String, safety: Boolean = true): User? {
         val user = withContext(Dispatchers.IO) {
             db.collection(collectionName).document(id).get().get()
         }.toObject(User::class.java) ?: return null
 
-        user.id = id
-        user.notifications = mapOf()
+        if (safety) {
+            user.id = id
+            user.notifications = mapOf()
+        }
 
         return user
     }
@@ -41,11 +43,11 @@ object UserService {
     suspend fun getUserByToken(token: String): User? {
         val discordUser = getDiscordUserByToken(token)
 
-        return getUserById(discordUser.id)
+        return getUserById(discordUser.id, false)
     }
 
-    suspend fun getUsers(limit: Int, before: String, sort: String, reverse: Boolean): List<User> {
-        return GeneralService.get(collectionName, limit, before, sort, reverse) { user ->
+    suspend fun getUsers(limit: Int, before: String, sort: String): List<User> {
+        return GeneralService.get(collectionName, limit, before, sort) { user ->
             user.toUser().apply {
                 email = ""
                 notifications = mapOf()
@@ -71,7 +73,7 @@ object UserService {
                 "name" to discordUser.username,
                 "avatar" to "${config["DISCORD_CDN"]}avatars/${discordUser.id}/${discordUser.avatar}.png",
                 "bio" to "Look at me, I'm new!",
-                "references" to ArrayList<String>(),
+                "references" to listOf<String>(),
                 "country" to null,
                 "email" to "",
                 "federation" to null,
@@ -81,7 +83,8 @@ object UserService {
                 "title" to null,
                 "notifications" to mapOf<String, Map<String, String>>(),
                 "birthday" to 0,
-                "registered_at" to currentTime()
+                "registered_at" to currentTime(),
+                "badges" to listOf<String>()
             )
             document.set(data)
         }
