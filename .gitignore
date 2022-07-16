@@ -1,7 +1,6 @@
 .env
 .env.prod
-firebase.json
-firestore.json
+firebase-admin.json
 
 .gradle
 build/

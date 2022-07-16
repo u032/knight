@@ -2,7 +2,9 @@ package wiki.chess
 
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.Firestore
-import com.google.cloud.firestore.FirestoreOptions
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
+import com.google.firebase.cloud.FirestoreClient
 import io.github.cdimascio.dotenv.dotenv
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -15,11 +17,13 @@ val db: Firestore get() = dbNullable!!
 val config = dotenv()
 
 fun main() {
-    val options = FirestoreOptions.getDefaultInstance().toBuilder()
-        .setCredentials(GoogleCredentials.fromStream(FileInputStream(config["SERVICE_KEY"])))
+    val options = FirebaseOptions.builder()
+        .setCredentials(GoogleCredentials.fromStream(FileInputStream(config["ADMIN_SDK"])))
         .build()
 
-    dbNullable = options.service
+    FirebaseApp.initializeApp(options)
+
+    dbNullable = FirestoreClient.getFirestore()
 
     embeddedServer(Netty, port = config["PORT"].toInt()) {
         configureRouting()

@@ -19,7 +19,7 @@ object TokenService {
                 append("client_secret", config["DISCORD_SECRET"])
                 append("grant_type", "authorization_code")
                 append("code", code)
-                append("redirect_uri", config["FRONTEND_CALLBACK_URL"])
+                append("redirect_uri", config["REDIRECT_URI"])
             }))
             contentType(ContentType.Application.FormUrlEncoded)
         }

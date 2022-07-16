@@ -1,12 +1,24 @@
 # Knight
 Chess Social Network,
-[ui](https://github.com/u032/knight-ui),
+[ui](https://knight.chesscord.wiki) 
+([repo](https://github.com/u032/knight-ui)),
+[docs](https://docs.chesscord.wiki),
 [api](https://headcrab.gitbook.io/knight/)
 
 ## Instruction
 1. Clone this repository.
-2. Create service account and generate key in GCP: [Instruction](https://cloud.google.com/docs/authentication/production#create_service_account).
-3. Download this key and copy to this directory.
-4. Rename `.env.example` to `.env` and write to this file required data.
-5. Install docker and run `docker build -t kngiht .` command.
-6. Run `docker run -d -p 8787:8787 knight` command.
+```text
+git clone https://github.com/u032/knight.git
+```
+2. Create project in Firebase.
+3. Click to Settings icon and choose `Project settings`.
+4. Click to tab `Service accounts`, choose `Firebase Admin SDK` and click button `Generate new private key`.
+5. Rename `.env.example` to `.env` and write to this file required data (Don't forget specify path to the Firebase Admin SDK file).
+6. Install OpenJDK 17.
+```text
+apt install openjdk-17-jdk
+```
+7. Run API.
+```text
+java -jar build/libs/knight.jar
+```

@@ -138,7 +138,7 @@ fun QueryDocumentSnapshot.toPost(): Post {
 
 val discordApi = HttpClient {
     defaultRequest {
-        url(config["DISCORD_API"])
+        url("https://discord.com/api/v10/")
     }
     install(ContentNegotiation) {
         json(Json {

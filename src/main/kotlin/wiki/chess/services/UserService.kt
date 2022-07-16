@@ -71,7 +71,7 @@ object UserService {
         if (!user.exists()) {
             val data: Map<String, Any?> = mapOf(
                 "name" to discordUser.username,
-                "avatar" to "${config["DISCORD_CDN"]}avatars/${discordUser.id}/${discordUser.avatar}.png",
+                "avatar" to "https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png",
                 "bio" to "Look at me, I'm new!",
                 "references" to listOf<String>(),
                 "country" to null,

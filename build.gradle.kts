@@ -1,7 +1,7 @@
 val ktorVersion = "2.0.3"
 val kotlinVersion = "1.6.21"
 val logbackVersion = "1.2.11"
-val firestoreVersion = "3.3.0"
+val firebaseVersion = "9.0.0"
 val dotenvVersion = "6.3.1"
 val isDevelopment = true
 
@@ -36,7 +36,7 @@ dependencies {
     implementation("io.ktor:ktor-client-java-jvm:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("com.google.cloud:google-cloud-firestore:$firestoreVersion")
+    implementation("com.google.firebase:firebase-admin:$firebaseVersion")
     implementation("io.github.cdimascio:dotenv-kotlin:$dotenvVersion")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
