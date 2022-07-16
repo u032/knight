@@ -109,15 +109,6 @@ suspend fun String.toInt(call: ApplicationCall): Int? {
     return num
 }
 
-suspend fun String.toBoolean(call: ApplicationCall): Boolean? {
-    val bool = toBooleanStrictOrNull()
-    if (bool == null) {
-        call.respond(HttpStatusCode.BadRequest, "Cannot parse '$this' to boolean")
-        return null
-    }
-    return bool
-}
-
 fun currentTime(): Long {
     return System.currentTimeMillis() / 1000L
 }
