@@ -48,8 +48,7 @@ object UserService {
         }.toObject(User::class.java) ?: return null
 
         if (safety) {
-            user.id = id
-            user.notifications = mapOf()
+            user.notifications = listOf()
         }
 
         return user
@@ -78,9 +77,9 @@ object UserService {
      */
     suspend fun getUsers(limit: Int, before: String, sort: String): List<User> {
         return GeneralService.get(collectionName, limit, before, sort) { user ->
-            user.toUser().apply {
+            user.toObject(User::class.java).apply {
                 email = ""
-                notifications = mapOf()
+                notifications = listOf()
             }
         }
     }
@@ -117,6 +116,7 @@ object UserService {
 
         if (!user.exists()) {
             val data: Map<String, Any?> = mapOf(
+                "id" to discordUser.id,
                 "name" to discordUser.username,
                 "avatar" to "https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png",
                 "bio" to "Look at me, I'm new!",

@@ -4,7 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import wiki.chess.db
 import wiki.chess.models.Post
-import wiki.chess.toPost
 
 object PostService {
     private const val collectionName = "posts"
@@ -20,7 +19,7 @@ object PostService {
      */
     suspend fun getPosts(limit: Int, before: String, sort: String): List<Post> {
         return GeneralService.get(collectionName, limit, before, sort) { post ->
-            post.toPost()
+            post.toObject(Post::class.java)
         }
     }
 
@@ -31,13 +30,9 @@ object PostService {
      * @return A Post object
      */
     suspend fun getPostById(id: String): Post? {
-        val post = withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             db.collection(collectionName).document(id).get().get()
         }.toObject(Post::class.java)
-
-        post?.id = id
-
-        return post
     }
 
     /**
@@ -56,6 +51,17 @@ object PostService {
      */
     fun decrementVotes(post: Post) {
         db.collection(collectionName).document(post.id).update("votes", post.votes - 1)
+    }
+
+    /**
+     * It creates a new document in the collection with the data passed in
+     *
+     * @param data Map<String, Any>
+     */
+    fun createPost(data: Map<String, Any>) {
+        val collection = db.collection(collectionName)
+        val id = collection.listDocuments().count() + 1
+        collection.document(id.toString()).set(data)
     }
 
     /**

@@ -1,6 +1,5 @@
 package wiki.chess
 
-import com.google.cloud.firestore.QueryDocumentSnapshot
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -105,7 +104,7 @@ suspend fun ApplicationCall.getDiscordUser(): DiscordUser? {
 suspend fun ApplicationCall.getUser(): User? {
     val discordUser = getDiscordUser() ?: return null
 
-    val user = UserService.getUserById(discordUser.id)
+    val user = UserService.getUserById(discordUser.id, false)
 
     if (user == null) {
         respond(HttpStatusCode.NotFound, "User not found")
@@ -181,22 +180,6 @@ suspend fun String.toInt(call: ApplicationCall): Int? {
  */
 fun currentTime(): Long {
     return System.currentTimeMillis() / 1000L
-}
-
-/** It's a function that takes a QueryDocumentSnapshot and returns a User object. */
-fun QueryDocumentSnapshot.toUser(): User {
-    val documentId = this.id
-    return toObject(User::class.java).apply {
-        id = documentId
-    }
-}
-
-/** It's a function that takes a QueryDocumentSnapshot and returns a Post object. */
-fun QueryDocumentSnapshot.toPost(): Post {
-    val documentId = this.id
-    return toObject(Post::class.java).apply {
-        id = documentId
-    }
 }
 
 /** It's creating an HTTP client that will make requests to the Discord API. */

@@ -5,8 +5,6 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import wiki.chess.*
 import wiki.chess.enums.Role
 import wiki.chess.services.PostService
@@ -27,13 +25,11 @@ fun Route.posts() {
     }
 
     put("/create") {
-        val collection = db.collection("posts")
         val user = call.getUser() ?: return@put
         val content = call.receiveText()
 
         content.hasLength(call, min = 8) ?: return@put
 
-        val id = withContext(Dispatchers.IO) { collection.get().get() }.documents.size + 1
         val data: Map<String, Any> = mapOf(
             "content" to content,
             "author" to user.id,
@@ -42,7 +38,7 @@ fun Route.posts() {
             "votes" to 0
         )
 
-        collection.document(id.toString()).set(data)
+        PostService.createPost(data)
 
         call.respond(HttpStatusCode.OK)
     }
@@ -83,6 +79,7 @@ fun Route.posts() {
         )
 
         PostService.editPost(post, editedPost)
+
         call.respond(HttpStatusCode.OK)
     }
 

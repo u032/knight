@@ -1,11 +1,10 @@
 package wiki.chess.models
 
-import kotlinx.serialization.Serializable
 import wiki.chess.enums.*
 
-@Serializable
+@kotlinx.serialization.Serializable
 data class User(
-    var id: String = "",
+    val id: String = "",
     val avatar: String = "",
     val name: String = "",
     val bio: String = "",
@@ -17,7 +16,7 @@ data class User(
     val role: Role = Role.USER,
     val sex: Sex? = null,
     val title: Title? = null,
-    var notifications: Map<String, Map<String, String>> = mapOf(),
+    var notifications: List<Notification> = listOf(),
     val birthday: Long = 0,
     val registered_at: Long = 0,
     val badges: List<Badge> = listOf(),
