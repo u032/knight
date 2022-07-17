@@ -7,7 +7,7 @@ import wiki.chess.getForm
 import wiki.chess.services.TokenService
 import wiki.chess.services.UserService
 
-fun Route.auth() {
+fun Route.authRoutes() {
     post("/authorize") {
         val code = call.getForm("code") ?: return@post
         val accessToken = TokenService.getToken(call, code) ?: return@post

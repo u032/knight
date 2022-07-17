@@ -21,12 +21,12 @@ fun Application.configureRouting() {
 
     routing {
         // WebSockets
-        route("/notifications") { notifications() }
+        route("/notifications") { notificationRoutes() }
 
         // HTTPs
-        route("/auth") { auth() }
-        route("/users") { users() }
-        route("/posts") { posts() }
-        route("/mod") { mod() }
+        route("/auth") { authRoutes() }
+        route("/users") { userRoutes() }
+        route("/posts") { postRoutes() }
+        route("/mod") { modRoutes() }
     }
 }

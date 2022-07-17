@@ -8,7 +8,7 @@ import wiki.chess.db
 import wiki.chess.models.User
 import wiki.chess.services.UserService
 
-fun Route.notifications() {
+fun Route.notificationRoutes() {
     webSocket {
         for (frame in incoming) {
             if (frame !is Frame.Text) {

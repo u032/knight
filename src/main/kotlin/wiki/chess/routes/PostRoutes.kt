@@ -9,7 +9,7 @@ import wiki.chess.*
 import wiki.chess.enums.Role
 import wiki.chess.services.PostService
 
-fun Route.posts() {
+fun Route.postRoutes() {
     get {
         val limit = call.getQuery("limit")?.toInt(call)?.isNegative(call) ?: return@get
         val before = call.getQuery("before", false)!!

@@ -10,7 +10,7 @@ import wiki.chess.getPath
 import wiki.chess.getUser
 import wiki.chess.isModerator
 
-fun Route.mod() {
+fun Route.modRoutes() {
     put("/{user}/title/{title}") {
         val user = call.getUser()?.isModerator(call) ?: return@put
         val title = call.getPath("title") ?: return@put

@@ -9,7 +9,7 @@ import wiki.chess.*
 import wiki.chess.models.User
 import wiki.chess.services.UserService
 
-fun Route.users() {
+fun Route.userRoutes() {
     get {
         val limit = call.getQuery("limit")?.toInt(call)?.isNegative(call) ?: return@get
         val before = call.getQuery("before", false)!!
