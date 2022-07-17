@@ -15,6 +15,12 @@ import wiki.chess.models.User
 object UserService {
     private const val collectionName = "users"
 
+    /**
+     * `getDiscordUserByToken` is a function that takes a string and returns a `DiscordUser` object
+     *
+     * @param token The token of the user you want to get the information of.
+     * @return A DiscordUser object
+     */
     suspend fun getDiscordUserByToken(token: String): DiscordUser {
         val res = discordApi.get("users/@me") {
             bearerAuthorization(token)
@@ -27,6 +33,15 @@ object UserService {
         return res.body()
     }
 
+    /**
+     * > This function gets a user from the database by their id, and if safety is true, it sets the id and notifications
+     * to null
+     *
+     * @param id The id of the user you want to get
+     * @param safety If true, the user's id and notifications will be set to the id and notifications of the user in the
+     * database.
+     * @return A user object
+     */
     suspend fun getUserById(id: String, safety: Boolean = true): User? {
         val user = withContext(Dispatchers.IO) {
             db.collection(collectionName).document(id).get().get()
@@ -40,12 +55,27 @@ object UserService {
         return user
     }
 
+    /**
+     * > This function gets a user by their token
+     *
+     * @param token The token of the user you want to get.
+     * @return A User object
+     */
     suspend fun getUserByToken(token: String): User? {
         val discordUser = getDiscordUserByToken(token)
 
         return getUserById(discordUser.id, false)
     }
 
+    /**
+     * > This function returns a list of users, and it does so by calling the `GeneralService.get` function, which takes a
+     * collection name, a limit, a before, a sort, and a function that converts a document to a user
+     *
+     * @param limit The maximum number of users to return.
+     * @param before The id of the last user in the previous page.
+     * @param sort The field to sort by.
+     * @return A list of users.
+     */
     suspend fun getUsers(limit: Int, before: String, sort: String): List<User> {
         return GeneralService.get(collectionName, limit, before, sort) { user ->
             user.toUser().apply {
@@ -55,14 +85,31 @@ object UserService {
         }
     }
 
+    /**
+     * Update the user's document in the database with the given data.
+     *
+     * @param user User - The user object that you want to update
+     * @param data Map<String, Any?>
+     */
     fun updateUser(user: User, data: Map<String, Any?>) {
         db.collection(collectionName).document(user.id).update(data)
     }
 
+    /**
+     * It deletes a user from the database.
+     *
+     * @param user User - This is the user object that we want to delete.
+     */
     fun deleteUser(user: User) {
         db.collection(collectionName).document(user.id).delete()
     }
 
+    /**
+     * It gets the user's information from Discord, checks if the user exists in the database, and if not, creates a new
+     * user
+     *
+     * @param accessToken The access token that was received from the OAuth2 flow.
+     */
     suspend fun initializeUser(accessToken: AccessToken) {
         val discordUser = getDiscordUserByToken(accessToken.access_token)
         val document = db.collection(collectionName).document(discordUser.id)

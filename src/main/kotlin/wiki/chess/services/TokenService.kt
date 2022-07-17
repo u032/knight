@@ -12,6 +12,13 @@ import wiki.chess.models.AccessToken
 import wiki.chess.models.DiscordError
 
 object TokenService {
+    /**
+     * It takes a code from the URL, sends it to Discord, and returns the access token
+     *
+     * @param call The call that was made to the server.
+     * @param code The code that was sent to the redirect URI
+     * @return An AccessToken object
+     */
     suspend fun getToken(call: ApplicationCall, code: String): AccessToken? {
         val res = discordApi.post("oauth2/token") {
             setBody(FormDataContent(Parameters.build {
@@ -32,6 +39,13 @@ object TokenService {
         return res.body()
     }
 
+    /**
+     * It takes a call and a refresh token, and returns the access token
+     *
+     * @param call The call that is being made to the server.
+     * @param token The refresh token that was given to the user when they logged in.
+     * @return An AccessToken object
+     */
     suspend fun refreshToken(call: ApplicationCall, token: String): AccessToken? {
         val res = discordApi.post("oauth2/token") {
             setBody(FormDataContent(Parameters.build {
@@ -51,6 +65,13 @@ object TokenService {
         return res.body()
     }
 
+    /**
+     * It takes a call and a token, and revokes the token
+     *
+     * @param call The call that was made to the server.
+     * @param token The token you want to revoke
+     * @return A string
+     */
     suspend fun revokeToken(call: ApplicationCall, token: String): String? {
         val res = discordApi.post("oauth2/token/revoke") {
             setBody(FormDataContent(Parameters.build {

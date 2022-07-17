@@ -13,10 +13,13 @@ import wiki.chess.plugins.configureRouting
 import java.io.FileInputStream
 
 var dbNullable: Firestore? = null
+/* It's a getter that returns the value of `dbNullable` if it's not null. */
 val db: Firestore get() = dbNullable!!
+/* It's loading the `.env` file into a `Map<String, String>` object. */
 val config = dotenv()
 
 fun main() {
+    /* It's initializing the Firebase SDK with the credentials from the `.env` file. */
     val options = FirebaseOptions.builder()
         .setCredentials(GoogleCredentials.fromStream(FileInputStream(config["ADMIN_SDK"])))
         .build()
@@ -25,6 +28,7 @@ fun main() {
 
     dbNullable = FirestoreClient.getFirestore()
 
+    /* It's starting the server. */
     embeddedServer(Netty, port = config["PORT"].toInt()) {
         configureRouting()
         configureHTTP()

@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import wiki.chess.db
 
 object GeneralService {
+    /** A function that takes in a collection name, a limit, a before, a sort, and an action. It returns a list of T. */
     suspend fun <T> get(
         collectionName: String,
         limit: Int,
