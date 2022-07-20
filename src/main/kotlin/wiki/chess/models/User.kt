@@ -5,6 +5,7 @@ import wiki.chess.enums.*
 @kotlinx.serialization.Serializable
 data class User(
     val id: String = "",
+    val bot: Boolean = false,
     val avatar: String = "",
     val name: String = "",
     val bio: String = "",
